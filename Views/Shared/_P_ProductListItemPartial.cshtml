@@ -40,9 +40,12 @@
             </div>
         </div>
         <div class="products-mini-add border-top p-3 d-flex justify-content-between align-items-center">
-            <a href="#" class="btn btn-primary border-secondary rounded-pill py-2 px-3">
-                <i class="fas fa-shopping-cart me-2"></i> Thêm vào giỏ
-            </a>
+            <button type="button"
+                    class="btn btn-primary rounded-pill px-3 py-2 text-white border-0 btn-add-to-cart"
+                    data-product-id="@Model.ProductId"
+                    data-product-name="@Model.Name">
+                <i class="fas fa-shopping-cart me-2"></i>Thêm vào giỏ
+            </button>
             <div class="d-flex">
                 <a href="#" class="text-primary d-flex align-items-center justify-content-center me-3">
                     <span class="rounded-circle btn-sm-square border"><i class="fas fa-random"></i></span>

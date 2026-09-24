@@ -1,0 +1,138 @@
+﻿@model List<WebBanPC.Models.CartItem>
+@{
+    ViewData["Title"] = "Giỏ Hàng";
+    var subtotal = Model.Sum(i => i.Total);
+    decimal shipping = Model.Any() ? 30000 : 0; // Phí vận chuyển ví dụ 30.000đ
+    var total = subtotal + shipping;
+}
+
+<!-- Single Page Header start -->
+<div class="container-fluid page-header py-5 bg-dark mb-4">
+    <h1 class="text-center text-white display-6 wow fadeInUp" data-wow-delay="0.1s">Giỏ Hàng Của Bạn</h1>
+    <ol class="breadcrumb justify-content-center mb-0 wow fadeInUp" data-wow-delay="0.3s">
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Trang Chủ</a></li>
+        <li class="breadcrumb-item active text-white">Giỏ Hàng</li>
+    </ol>
+</div>
+<!-- Single Page Header End -->
+<!-- Cart Page Start -->
+<div class="container-fluid py-4">
+    <div class="container py-3">
+        @if (!Model.Any())
+        {
+            <div class="text-center py-5">
+                <i class="fas fa-shopping-cart fa-4x text-muted mb-3"></i>
+                <h4 class="text-muted">Giỏ hàng của bạn đang trống!</h4>
+                <a asp-controller="Home" asp-action="Index" class="btn btn-primary rounded-pill px-4 py-2 mt-3">
+                    Tiếp tục mua sắm
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col" style="min-width: 280px;">Sản phẩm</th>
+                            <th scope="col">Mã SKU</th>
+                            <th scope="col">Đơn giá</th>
+                            <th scope="col" class="text-center" style="width: 160px;">Số lượng</th>
+                            <th scope="col">Thành tiền</th>
+                            <th scope="col" class="text-center">Xóa</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <th scope="row">
+                                    <div class="d-flex align-items-center">
+                                        <img src="~/@item.ImageUrl" class="img-fluid me-3 rounded" style="width: 70px; height: 70px; object-fit: contain;" alt="@item.Name">
+                                        <a asp-controller="Product" asp-action="Details" asp-route-id="@item.ProductId" class="text-dark fw-bold text-decoration-none">
+                                            @item.Name
+                                        </a>
+                                    </div>
+                                </th>
+                                <td>
+                                    <span class="badge bg-secondary">@(item.Sku ?? "N/A")</span>
+                                </td>
+                                <td>
+                                    <span class="text-primary fw-bold">@item.Price.ToString("N0") đ</span>
+                                </td>
+                                <td>
+                                    <div class="input-group input-group-sm justify-content-center">
+                                        <form asp-controller="Cart" asp-action="UpdateQuantity" method="post" class="d-inline">
+                                            <input type="hidden" name="productId" value="@item.ProductId" />
+                                            <input type="hidden" name="change" value="-1" />
+                                            <button class="btn btn-outline-secondary rounded-start" type="submit">
+                                                <i class="fa fa-minus"></i>
+                                            </button>
+                                        </form>
+
+                                        <input type="text" class="form-control text-center bg-white" style="max-width: 50px;" value="@item.Quantity" readonly>
+
+                                        <form asp-controller="Cart" asp-action="UpdateQuantity" method="post" class="d-inline">
+                                            <input type="hidden" name="productId" value="@item.ProductId" />
+                                            <input type="hidden" name="change" value="1" />
+                                            <button class="btn btn-outline-secondary rounded-end" type="submit">
+                                                <i class="fa fa-plus"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="fw-bold text-danger">@item.Total.ToString("N0") đ</span>
+                                </td>
+                                <td class="text-center">
+                                    <form asp-controller="Cart" asp-action="RemoveItem" method="post">
+                                        <input type="hidden" name="productId" value="@item.ProductId" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle" onclick="return confirm('Bạn có chắc muốn xóa sản phẩm này?');">
+                                            <i class="fa fa-times"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mt-3">
+                <form asp-controller="Cart" asp-action="Clear" method="post">
+                    <button type="submit" class="btn btn-outline-danger rounded-pill px-3 py-2" onclick="return confirm('Xóa toàn bộ giỏ hàng?');">
+                        <i class="fas fa-trash me-2"></i>Xóa sạch giỏ hàng
+                    </button>
+                </form>
+                <a asp-controller="Home" asp-action="Index" class="btn btn-outline-primary rounded-pill px-4 py-2">
+                    <i class="fas fa-arrow-left me-2"></i>Tiếp tục mua hàng
+                </a>
+            </div>
+
+            <div class="row g-4 justify-content-end mt-4">
+                <div class="col-sm-8 col-md-7 col-lg-6 col-xl-5">
+                    <div class="bg-light rounded p-4">
+                        <h4 class="mb-4">Tóm tắt đơn hàng</h4>
+                        <div class="d-flex justify-content-between mb-3">
+                            <span class="text-muted">Tạm tính:</span>
+                            <span class="fw-bold">@subtotal.ToString("N0") đ</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3">
+                            <span class="text-muted">Phí vận chuyển:</span>
+                            <span>@shipping.ToString("N0") đ</span>
+                        </div>
+                        <hr />
+                        <div class="d-flex justify-content-between mb-4">
+                            <h5 class="mb-0">Tổng thanh toán:</h5>
+                            <h4 class="text-danger fw-bold mb-0">@total.ToString("N0") đ</h4>
+                        </div>
+                        <a asp-controller="Order" asp-action="Checkout" class="btn btn-primary rounded-pill w-100 py-3 text-uppercase fw-bold">
+                            Tiến hành đặt hàng
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+<!-- Cart Page End -->

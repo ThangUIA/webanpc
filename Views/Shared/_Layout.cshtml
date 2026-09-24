@@ -58,6 +58,61 @@
     <!-- Template Javascript -->
     <script src="~/js/main.js"></script>
 
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999;">
+        <div id="cartToast" class="toast align-items-center text-white bg-success border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body fs-6 py-3">
+                    <i class="fas fa-check-circle me-2 fa-lg"></i>
+                    <span id="toastMessage">Đã thêm vào giỏ hàng thành công!</span>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            $(document).on('click', '.btn-add-to-cart', function (e) {
+                e.preventDefault();
+
+                var btn = $(this);
+                var productId = btn.data('product-id');
+                var originalHtml = btn.html();
+
+                btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i>Đang thêm...');
+
+                $.ajax({
+                    url: '/Cart/AddToCart',
+                    type: 'POST',
+                    data: {
+                        productId: productId,
+                        quantity: 1
+                    },
+                    success: function (res) {
+                        btn.prop('disabled', false).html(originalHtml);
+
+                        if (res.success) {
+                            $('#toastMessage').text(res.message);
+                            var toastEl = document.getElementById('cartToast');
+                            var toast = new bootstrap.Toast(toastEl, { delay: 3000 });
+                            toast.show();
+
+                            if (res.cartCount !== undefined) {
+                                $('.cart-badge-count').text(res.cartCount);
+                            }
+                        } else {
+                            alert(res.message);
+                        }
+                    },
+                    error: function () {
+                        btn.prop('disabled', false).html(originalHtml);
+                        alert('Có lỗi xảy ra khi thêm vào giỏ hàng!');
+                    }
+                });
+            });
+        });
+    </script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 
