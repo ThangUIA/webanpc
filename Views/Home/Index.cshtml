@@ -1,0 +1,156 @@
+﻿@model WebBanPC.Models.PaginatedList<WebBanPC.Models.Product>
+@{
+    ViewData["Title"] = "Cửa Hàng Linh Kiện PC";
+}
+
+<!-- Header breadcrumb / Services / Offers của riêng trang Home -->
+<partial name="_P_Header" />
+<partial name="_P_Searvices" />
+<partial name="_P_ProductsOffer" />
+
+<div class="container-fluid shop py-5">
+    <div class="container py-5">
+        <div class="row g-4">
+            <!-- 1. Cột Sidebar bên trái -->
+            <div class="col-lg-3 wow fadeInUp" data-wow-delay="0.1s">
+                @await Component.InvokeAsync("Sidebar")
+            </div>
+
+            <!-- 2. Cột Danh sách sản phẩm bên phải -->
+            <div class="col-lg-9 wow fadeInUp" data-wow-delay="0.1s">
+                <!-- Banner SALE -->
+                <div class="rounded mb-4 position-relative">
+                    <img src="~/img/product-banner-3.jpg" class="img-fluid rounded w-100" style="height: 250px; object-fit: cover;" alt="Banner">
+                    <div class="position-absolute rounded d-flex flex-column align-items-center justify-content-center text-center"
+                         style="width: 100%; height: 250px; top: 0; left: 0; background: rgba(242, 139, 0, 0.3);">
+                        <h4 class="display-5 text-primary">SALE</h4>
+                        <h3 class="display-4 text-white mb-4">Get UP To 50% Off</h3>
+                        <a href="#" class="btn btn-primary rounded-pill">Shop Now</a>
+                    </div>
+                </div>
+
+                <!-- Form Tìm kiếm & Sắp xếp -->
+                <div class="row g-4 mb-4">
+                    <div class="col-xl-7">
+                        <form asp-controller="Home" asp-action="Index" method="get">
+                            <input type="hidden" name="categoryId" value="@ViewBag.CurrentCategory" />
+                            <input type="hidden" name="brandId" value="@ViewBag.CurrentBrand" />
+                            <input type="hidden" name="sortOrder" value="@ViewBag.CurrentSort" />
+
+                            <div class="input-group w-100 mx-auto d-flex">
+                                <input type="search" name="search" value="@ViewBag.CurrentSearch"
+                                       class="form-control p-3" placeholder="Nhập tên linh kiện (CPU, RTX 4060...)">
+                                <button type="submit" class="input-group-text p-3 bg-primary text-white border-0">
+                                    <i class="fa fa-search"></i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="col-xl-3 text-end">
+                        <form id="sortForm" asp-controller="Home" asp-action="Index" method="get">
+                            <input type="hidden" name="search" value="@ViewBag.CurrentSearch" />
+                            <input type="hidden" name="categoryId" value="@ViewBag.CurrentCategory" />
+                            <input type="hidden" name="brandId" value="@ViewBag.CurrentBrand" />
+
+                            <div class="bg-light ps-3 py-3 rounded d-flex justify-content-between align-items-center">
+                                <label for="sortOrder" class="mb-0 text-nowrap me-2">Sort By:</label>
+                                <select id="sortOrder" name="sortOrder" class="border-0 form-select-sm bg-light me-2 w-100"
+                                        onchange="document.getElementById('sortForm').submit();">
+                                    <option value="" selected="@(string.IsNullOrEmpty(ViewBag.CurrentSort))">Mặc định</option>
+                                    <option value="price_asc" selected="@(ViewBag.CurrentSort == "price_asc")">Giá tăng dần</option>
+                                    <option value="price_desc" selected="@(ViewBag.CurrentSort == "price_desc")">Giá giảm dần</option>
+                                    <option value="name_asc" selected="@(ViewBag.CurrentSort == "name_asc")">Tên: A - Z</option>
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="col-lg-4 col-xl-2">
+                        <ul class="nav nav-pills d-inline-flex text-center py-2 px-2 rounded bg-light mb-4">
+                            <li class="nav-item me-4">
+                                <a class="bg-light active" data-bs-toggle="pill" href="#tab-5">
+                                    <i class="fas fa-th fa-3x text-primary"></i>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="bg-light" data-bs-toggle="pill" href="#tab-6">
+                                    <i class="fas fa-bars fa-3x text-primary"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                @if (ViewBag.CurrentCategory != null || !string.IsNullOrWhiteSpace(ViewBag.CurrentSearch) || ViewBag.CurrentBrand != null || ViewBag.CurrentMaxPrice != null)
+                {
+                    <div class="alert alert-info d-flex justify-content-between align-items-center py-2 px-3 mb-4 rounded">
+                        <div>
+                            <i class="fas fa-filter me-2"></i>
+                            <span>Đang lọc kết quả: </span>
+                            @if (!string.IsNullOrWhiteSpace(ViewBag.CurrentSearch))
+                            {
+                                <span class="badge bg-primary me-1">Từ khóa: "@ViewBag.CurrentSearch"</span>
+                            }
+                            @if (ViewBag.CurrentCategory != null)
+                            {
+                                <span class="badge bg-secondary me-1">Danh mục đã chọn</span>
+                            }
+                            @if (ViewBag.CurrentBrand != null)
+                            {
+                                <span class="badge bg-dark me-1">Thương hiệu đã chọn</span>
+                            }
+                        </div>
+                        <a asp-controller="Home" asp-action="Index" class="btn btn-sm btn-outline-danger bg-white">
+                            <i class="fas fa-times me-1"></i> Xem tất cả sản phẩm
+                        </a>
+                    </div>
+                }
+
+                <!-- Tab Danh sách sản phẩm (Grid / List) & Phân trang -->
+                <div class="tab-content">
+                    <div id="tab-5" class="tab-pane fade show p-0 active">
+                        <div class="row g-4 product">
+                            @foreach (var item in Model)
+                            {
+                                <partial name="_P_ProductItemPartial" model="item" />
+                            }
+                            <div class="col-12 wow fadeInUp" data-wow-delay="0.1s">
+                                <div class="pagination d-flex justify-content-center mt-5">
+                                    <a asp-action="Index" asp-route-page="@(Model.PageIndex - 1)" asp-route-search="@ViewBag.CurrentSearch" asp-route-categoryId="@ViewBag.CurrentCategory" class="rounded @(!Model.HasPreviousPage ? "disabled pe-none text-muted" : "")">&laquo;</a>
+                                    @for (int i = 1; i <= Model.TotalPages; i++)
+                                    {
+                                        <a asp-action="Index" asp-route-page="@i" asp-route-search="@ViewBag.CurrentSearch" asp-route-categoryId="@ViewBag.CurrentCategory" class="rounded @(i == Model.PageIndex ? "active" : "")">@i</a>
+                                    }
+                                    <a asp-action="Index" asp-route-page="@(Model.PageIndex + 1)" asp-route-search="@ViewBag.CurrentSearch" asp-route-categoryId="@ViewBag.CurrentCategory" class="rounded @(!Model.HasNextPage ? "disabled pe-none text-muted" : "")">&raquo;</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tab-6" class="products tab-pane fade show p-0">
+                        <div class="row g-4 products-mini">
+                            @foreach (var item in Model)
+                            {
+                                <partial name="_P_ProductListItemPartial" model="item" />
+                            }
+                            <div class="col-12 wow fadeInUp" data-wow-delay="0.1s">
+                                <div class="pagination d-flex justify-content-center mt-5">
+                                    <a asp-action="Index" asp-route-page="@(Model.PageIndex - 1)" asp-route-search="@ViewBag.CurrentSearch" asp-route-categoryId="@ViewBag.CurrentCategory" class="rounded @(!Model.HasPreviousPage ? "disabled pe-none text-muted" : "")">&laquo;</a>
+                                    @for (int i = 1; i <= Model.TotalPages; i++)
+                                    {
+                                        <a asp-action="Index" asp-route-page="@i" asp-route-search="@ViewBag.CurrentSearch" asp-route-categoryId="@ViewBag.CurrentCategory" class="rounded @(i == Model.PageIndex ? "active" : "")">@i</a>
+                                    }
+                                    <a asp-action="Index" asp-route-page="@(Model.PageIndex + 1)" asp-route-search="@ViewBag.CurrentSearch" asp-route-categoryId="@ViewBag.CurrentCategory" class="rounded @(!Model.HasNextPage ? "disabled pe-none text-muted" : "")">&raquo;</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<partial name="_P_ProductBanner" />

@@ -1,0 +1,90 @@
+﻿@model WebBanPC.Models.PaginatedList<WebBanPC.Models.Product>
+
+<div class="tab-content">
+    <!-- ==================== TAB 5: DẠNG LƯỚI ==================== -->
+    <div id="tab-5" class="tab-pane fade show p-0 active">
+        <div class="row g-4 product">
+            @foreach (var item in Model)
+            {
+                <partial name="_P_ProductItemPartial" model="item" />
+            }
+
+            <!-- KHỐI PHÂN TRANG CHO TAB 5 -->
+            <div class="col-12 wow fadeInUp" data-wow-delay="0.1s">
+                <div class="pagination d-flex justify-content-center mt-5">
+                    <!-- Nút trang trước (<<) -->
+                    <a asp-action="Index"
+                       asp-route-page="@(Model.PageIndex - 1)"
+                       asp-route-search="@ViewBag.CurrentSearch"
+                       asp-route-categoryId="@ViewBag.CurrentCategory"
+                       asp-route-brandId="@ViewBag.CurrentBrand"
+                       asp-route-sortOrder="@ViewBag.CurrentSort"
+                       class="rounded @(!Model.HasPreviousPage ? "disabled pe-none text-muted" : "")">&laquo;</a>
+
+                    <!-- ĐOẠN CỦA BẠN ĐẶT Ở ĐÂY (VÒNG LẶP SỐ TRANG) -->
+                    @for (int i = 1; i <= Model.TotalPages; i++)
+                    {
+                        <a asp-action="Index"
+                           asp-route-page="@i"
+                           asp-route-search="@ViewBag.CurrentSearch"
+                           asp-route-categoryId="@ViewBag.CurrentCategory"
+                           asp-route-brandId="@ViewBag.CurrentBrand"
+                           asp-route-sortOrder="@ViewBag.CurrentSort"
+                           class="rounded @(i == Model.PageIndex ? "active" : "")">@i</a>
+                    }
+
+                    <!-- Nút trang sau (>>) -->
+                    <a asp-action="Index"
+                       asp-route-page="@(Model.PageIndex + 1)"
+                       asp-route-search="@ViewBag.CurrentSearch"
+                       asp-route-categoryId="@ViewBag.CurrentCategory"
+                       asp-route-brandId="@ViewBag.CurrentBrand"
+                       asp-route-sortOrder="@ViewBag.CurrentSort"
+                       class="rounded @(!Model.HasNextPage ? "disabled pe-none text-muted" : "")">&raquo;</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== TAB 6: DẠNG DANH SÁCH ==================== -->
+    <div id="tab-6" class="products tab-pane fade show p-0">
+        <div class="row g-4 products-mini">
+            @foreach (var item in Model)
+            {
+                <partial name="_P_ProductListItemPartial" model="item" />
+            }
+
+            <!-- KHỐI PHÂN TRANG CHO TAB 6 (Y hệt cụm trên) -->
+            <div class="col-12 wow fadeInUp" data-wow-delay="0.1s">
+                <div class="pagination d-flex justify-content-center mt-5">
+                    <a asp-action="Index"
+                       asp-route-page="@(Model.PageIndex - 1)"
+                       asp-route-search="@ViewBag.CurrentSearch"
+                       asp-route-categoryId="@ViewBag.CurrentCategory"
+                       asp-route-brandId="@ViewBag.CurrentBrand"
+                       asp-route-sortOrder="@ViewBag.CurrentSort"
+                       class="rounded @(!Model.HasPreviousPage ? "disabled pe-none text-muted" : "")">&laquo;</a>
+
+                    @for (int i = 1; i <= Model.TotalPages; i++)
+                    {
+                        <a asp-action="Index"
+                           asp-route-page="@i"
+                           asp-route-search="@ViewBag.CurrentSearch"
+                           asp-route-categoryId="@ViewBag.CurrentCategory"
+                           asp-route-brandId="@ViewBag.CurrentBrand"
+                           asp-route-sortOrder="@ViewBag.CurrentSort"
+                           class="rounded @(i == Model.PageIndex ? "active" : "")">@i</a>
+                    }
+
+                    <a asp-action="Index"
+                       asp-route-page="@(Model.PageIndex + 1)"
+                       asp-route-search="@ViewBag.CurrentSearch"
+                       asp-route-categoryId="@ViewBag.CurrentCategory"
+                       asp-route-brandId="@ViewBag.CurrentBrand"
+                       asp-route-sortOrder="@ViewBag.CurrentSort"
+                       class="rounded @(!Model.HasNextPage ? "disabled pe-none text-muted" : "")">&raquo;</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,91 @@
+﻿@model WebBanPC.Models.SidebarViewModel
+
+<!-- Danh mục linh kiện -->
+<div class="product-categories mb-4">
+    <h4>Danh Mục Linh Kiện</h4>
+    <ul class="list-unstyled">
+        @foreach (var cat in Model.Categories)
+        {
+            <li>
+                <div class="categories-item">
+                    <a asp-controller="Home" asp-action="Index" asp-route-categoryId="@cat.CategoryId" class="text-dark">
+                        <i class="@cat.IconClass text-secondary me-2"></i>
+                        @cat.CategoryName
+                    </a>
+                    <span>(@cat.ProductCount)</span>
+                </div>
+            </li>
+        }
+    </ul>
+</div>
+
+<!-- Lọc theo khoảng giá -->
+<div class="price mb-4">
+    <h4 class="mb-2">Lọc Theo Giá</h4>
+    <form asp-controller="Home" asp-action="Index" method="get">
+        <input type="range" class="form-range w-100" id="rangeInput" name="maxPrice"
+               min="1000000" max="50000000" step="1000000" value="50000000"
+               oninput="document.getElementById('amount').innerText = Number(this.value).toLocaleString() + ' đ'">
+        <div class="d-flex justify-content-between align-items-center mt-2">
+            <span>Tối đa:</span>
+            <span id="amount" class="fw-bold text-primary">50,000,000 đ</span>
+        </div>
+        <button type="submit" class="btn btn-sm btn-primary rounded-pill mt-2 w-100">Áp dụng</button>
+    </form>
+</div>
+
+<!-- Lọc theo Thương hiệu (thay thế cho Color) -->
+<div class="product-color mb-4">
+    <h4>Thương Hiệu</h4>
+    <ul class="list-unstyled">
+        @foreach (var brand in Model.Brands)
+        {
+            <li>
+                <div class="product-color-item">
+                    <a asp-controller="Home" asp-action="Index" asp-route-brandId="@brand.BrandId" class="text-dark">
+                        <i class="fas fa-tag text-secondary me-2"></i>
+                        @brand.BrandName
+                    </a>
+                </div>
+            </li>
+        }
+    </ul>
+</div>
+
+<!-- Sản phẩm nổi bật (Featured) -->
+<div class="featured-product mb-4">
+    <h4 class="mb-3">Linh Kiện Nổi Bật</h4>
+    @foreach (var item in Model.FeaturedProducts)
+    {
+        var img = item.ProductImages.FirstOrDefault(x => x.IsDefault)?.ImageUrl
+        ?? item.ProductImages.FirstOrDefault()?.ImageUrl
+        ?? "img/product-3.png";
+
+        <div class="featured-product-item mb-3 d-flex align-items-center">
+            <div class="rounded me-3 border p-1" style="width: 80px; height: 80px; flex-shrink: 0;">
+                <img src="~/@img" class="img-fluid rounded w-100 h-100" style="object-fit: contain;" alt="@item.Name">
+            </div>
+            <div>
+                <a asp-controller="Product" asp-action="Details" asp-route-id="@item.ProductId"
+                   class="d-block h6 text-truncate mb-1" style="max-width: 150px;" title="@item.Name">
+                    @item.Name
+                </a>
+                <div class="d-flex">
+                    <span class="text-primary fw-bold">@item.Price.ToString("N0") đ</span>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Tags phổ biến -->
+<div class="product-tags py-4">
+    <h4 class="mb-3">Từ Khóa Linh Kiện</h4>
+    <div class="product-tags-items bg-light rounded p-3">
+        <a asp-controller="Home" asp-action="Index" asp-route-search="Intel" class="border rounded py-1 px-2 mb-2 d-inline-block">Intel</a>
+        <a asp-controller="Home" asp-action="Index" asp-route-search="AMD" class="border rounded py-1 px-2 mb-2 d-inline-block">AMD</a>
+        <a asp-controller="Home" asp-action="Index" asp-route-search="RTX" class="border rounded py-1 px-2 mb-2 d-inline-block">RTX 4060</a>
+        <a asp-controller="Home" asp-action="Index" asp-route-search="DDR5" class="border rounded py-1 px-2 mb-2 d-inline-block">DDR5</a>
+        <a asp-controller="Home" asp-action="Index" asp-route-search="SSD" class="border rounded py-1 px-2 mb-2 d-inline-block">SSD NVMe</a>
+    </div>
+</div>

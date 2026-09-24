@@ -1,0 +1,19 @@
+﻿using System;
+using System.Collections.Generic;
+
+namespace WebBanPC.Models;
+
+public partial class Category
+{
+    public int CategoryId { get; set; }
+
+    public string CategoryName { get; set; } = null!;
+
+    public string Slug { get; set; } = null!;
+
+    public string? IconClass { get; set; }
+
+    public int? DisplayOrder { get; set; }
+
+    public virtual ICollection<Product> Products { get; set; } = new List<Product>();
+}

@@ -1,0 +1,158 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Electro - Electronics Website Template</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="" name="keywords">
+    <meta content="" name="description">
+
+    <!-- Google Web Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap"
+          rel="stylesheet">
+
+    <!-- Icon Font Stylesheet -->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Libraries Stylesheet -->
+    <link href="~/lib/animate/animate.min.css" rel="stylesheet">
+    <link href="~/lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
+
+
+    <!-- Customized Bootstrap Stylesheet -->
+    <link href="~/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Template Stylesheet -->
+    <link href="~/css/style.css" rel="stylesheet">
+</head>
+
+<body>
+
+    <!-- Spinner Start -->
+    <partial view name="_P_SpinnerStart" />
+    <!-- Spinner End -->
+    <!-- Topbar Start -->
+	<partial view name="_P_Topbar" />
+    <!-- Topbar End -->
+    <!-- Navbar & Hero Start -->
+	<partial view name="_P_Navbar&Hero" />
+    <!-- Navbar & Hero End -->
+    <!-- Single Page Header start -->
+    <partial view name="_P_Header" />
+    <!-- Single Page Header End -->
+    <!-- Searvices Start -->
+    <partial view name="_P_Searvices" />
+    <!-- Searvices End -->
+    <!-- Products Offer Start -->
+	<partial view name="_P_ProductsOffer" />
+    <!-- Products Offer End -->
+    <!-- Shop Page Start -->
+
+    <div class="container-fluid shop py-5">
+        <div class="container py-5">
+            <div class="row g-4">
+                <div class="col-lg-3 wow fadeInUp" data-wow-delay="0.1s">
+                    @await Component.InvokeAsync("Sidebar")
+                </div>
+                <div class="col-lg-9 wow fadeInUp" data-wow-delay="0.1s">
+                    <!-- Banner SALE -->
+                    <div class="rounded mb-4 position-relative">
+                        <img src="img/product-banner-3.jpg" class="img-fluid rounded w-100" style="height: 250px;" alt="Image">
+                        <div class="position-absolute rounded d-flex flex-column align-items-center justify-content-center text-center"
+                             style="width: 100%; height: 250px; top: 0; left: 0; background: rgba(242, 139, 0, 0.3);">
+                            <h4 class="display-5 text-primary">SALE</h4>
+                            <h3 class="display-4 text-white mb-4">Get UP To 50% Off</h3>
+                            <a href="#" class="btn btn-primary rounded-pill">Shop Now</a>
+                        </div>
+                    </div>
+
+                    <div class="row g-4 mb-4">
+                        <!-- 1. VỊ TRÍ GẮN FORM TÌM KIẾM KEYWORDS -->
+                        <div class="col-xl-7">
+                            <form asp-controller="Home" asp-action="Index" method="get">
+                                <!-- Giữ lại các bộ lọc hiện tại nếu có -->
+                                <input type="hidden" name="categoryId" value="@ViewBag.CurrentCategory" />
+                                <input type="hidden" name="brandId" value="@ViewBag.CurrentBrand" />
+                                <input type="hidden" name="sortOrder" value="@ViewBag.CurrentSort" />
+
+                                <div class="input-group w-100 mx-auto d-flex">
+                                    <input type="search" name="search" value="@ViewBag.CurrentSearch"
+                                           class="form-control p-3" placeholder="Nhập tên linh kiện (CPU, RTX 4060...)"
+                                           aria-describedby="search-icon-1">
+                                    <button type="submit" id="search-icon-1" class="input-group-text p-3 bg-primary text-white border-0">
+                                        <i class="fa fa-search"></i>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- 2. VỊ TRÍ GẮN FORM SORT BY (Tự động submit khi chọn) -->
+                        <div class="col-xl-3 text-end">
+                            <form id="sortForm" asp-controller="Home" asp-action="Index" method="get">
+                                <!-- Giữ lại từ khóa search và category khi đổi sort -->
+                                <input type="hidden" name="search" value="@ViewBag.CurrentSearch" />
+                                <input type="hidden" name="categoryId" value="@ViewBag.CurrentCategory" />
+                                <input type="hidden" name="brandId" value="@ViewBag.CurrentBrand" />
+
+                                <div class="bg-light ps-3 py-3 rounded d-flex justify-content-between align-items-center">
+                                    <label for="sortOrder" class="mb-0 text-nowrap me-2">Sort By:</label>
+                                    <select id="sortOrder" name="sortOrder" class="border-0 form-select-sm bg-light me-2 w-100"
+                                            onchange="document.getElementById('sortForm').submit();">
+                                        <option value="" selected="@(string.IsNullOrEmpty(ViewBag.CurrentSort))">Mặc định (Mới nhất)</option>
+                                        <option value="price_asc" selected="@(ViewBag.CurrentSort == "price_asc")">Giá: Thấp đến Cao</option>
+                                        <option value="price_desc" selected="@(ViewBag.CurrentSort == "price_desc")">Giá: Cao đến Thấp</option>
+                                        <option value="name_asc" selected="@(ViewBag.CurrentSort == "name_asc")">Tên: A - Z</option>
+                                    </select>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Nút chuyển đổi Tab Lưới / Tab Danh sách (Giữ nguyên) -->
+                        <div class="col-lg-4 col-xl-2">
+                            <ul class="nav nav-pills d-inline-flex text-center py-2 px-2 rounded bg-light mb-4">
+                                <li class="nav-item me-4">
+                                    <a class="bg-light active" data-bs-toggle="pill" href="#tab-5">
+                                        <i class="fas fa-th fa-3x text-primary"></i>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="bg-light" data-bs-toggle="pill" href="#tab-6">
+                                        <i class="fas fa-bars fa-3x text-primary"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Vùng nạp nội dung Index.cshtml chứa 2 tab và phân trang -->
+                    @RenderBody()
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shop Page End -->
+    <!-- Product Banner Start -->
+    <partial view name="_P_ProductBanner" />
+    <!-- Product Banner End -->
+    <!-- Footer Start -->
+	<partial view name="_P_Footer" />
+    <!-- Footer End -->
+    <!-- Copyright Start -->
+	<partial view name="_P_Copyright" />
+    <!-- Copyright End -->
+    <!-- Back to Top -->
+    <a href="#" class="btn btn-primary btn-lg-square back-to-top"><i class="fa fa-arrow-up"></i></a>
+
+
+    <!-- JavaScript Libraries -->
+    <partial view name="_P_JavaScript" />
+    <!-- Template Javascript -->
+    <script src="~/js/main.js"></script>
+</body>
+
+</html>
