@@ -1,0 +1,120 @@
+﻿@model WebBanPC.Models.ProductCrudVM
+@{
+    ViewData["Title"] = "Thêm Sản Phẩm Mới";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="card shadow border-0">
+                <div class="card-header bg-primary text-white py-3">
+                    <h5 class="mb-0"><i class="fas fa-plus me-2"></i>Thêm Mới Linh Kiện PC</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Create" method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="row g-3">
+                            <div class="col-md-8">
+                                <label asp-for="Name" class="form-label fw-bold"></label>
+                                <input asp-for="Name" class="form-control" placeholder="Ví dụ: CPU Intel Core i7 14700K" />
+                                <span asp-validation-for="Name" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="Sku" class="form-label fw-bold"></label>
+                                <input asp-for="Sku" class="form-control" placeholder="Ví dụ: CPU-I7-14700K" />
+                                <span asp-validation-for="Sku" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="CategoryId" class="form-label fw-bold"></label>
+                                <select asp-for="CategoryId" asp-items="ViewBag.Categories" class="form-select">
+                                    <option value="">-- Chọn danh mục --</option>
+                                </select>
+                                <span asp-validation-for="CategoryId" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="BrandId" class="form-label fw-bold"></label>
+                                <select asp-for="BrandId" asp-items="ViewBag.Brands" class="form-select">
+                                    <option value="">-- Chọn thương hiệu --</option>
+                                </select>
+                                <span asp-validation-for="BrandId" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label asp-for="Price" class="form-label fw-bold"></label>
+                                <input asp-for="Price" class="form-control" type="number" />
+                                <span asp-validation-for="Price" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="OldPrice" class="form-label fw-bold"></label>
+                                <input asp-for="OldPrice" class="form-control" type="number" />
+                            </div>
+                            <div class="col-md-2">
+                                <label asp-for="StockQuantity" class="form-label fw-bold"></label>
+                                <input asp-for="StockQuantity" class="form-control" type="number" />
+                                <span asp-validation-for="StockQuantity" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-2">
+                                <label asp-for="WarrantyMonths" class="form-label fw-bold"></label>
+                                <input asp-for="WarrantyMonths" class="form-control" type="number" />
+                            </div>
+
+                            <!-- Upload Ảnh -->
+                            <div class="col-12">
+                                <label asp-for="ImageFile" class="form-label fw-bold"></label>
+                                <input asp-for="ImageFile" type="file" class="form-control" accept="image/*" onchange="previewImage(this);" />
+                                <span asp-validation-for="ImageFile" class="text-danger"></span>
+                                <div class="mt-2">
+                                    <img id="imgPreview" src="#" alt="Xem trước ảnh" style="max-height: 140px; display: none;" class="rounded border p-1" />
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <label asp-for="ShortDescription" class="form-label fw-bold"></label>
+                                <textarea asp-for="ShortDescription" class="form-control" rows="2"></textarea>
+                            </div>
+                            <div class="col-12">
+                                <label asp-for="FullDescription" class="form-label fw-bold"></label>
+                                <textarea asp-for="FullDescription" class="form-control" rows="4"></textarea>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="form-check form-check-inline">
+                                    <input asp-for="IsNew" class="form-check-input" />
+                                    <label asp-for="IsNew" class="form-check-label"></label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input asp-for="IsFeatured" class="form-check-input" />
+                                    <label asp-for="IsFeatured" class="form-check-label"></label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 d-flex justify-content-end gap-2">
+                            <a asp-action="Index" class="btn btn-secondary px-4">Quay lại</a>
+                            <button type="submit" class="btn btn-primary px-4 fw-bold">Lưu Sản Phẩm</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    var preview = document.getElementById('imgPreview');
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
+}

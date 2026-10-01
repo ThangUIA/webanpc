@@ -1,0 +1,59 @@
+﻿@model WebBanPC.Models.Order
+@{
+    ViewData["Title"] = "Thanh Toán Đơn Hàng #" + Model.OrderId;
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-lg rounded-3 overflow-hidden text-center">
+                <div class="card-header bg-success text-white py-3">
+                    <h4 class="mb-0"><i class="fas fa-check-circle me-2"></i>Đặt Hàng Thành Công!</h4>
+                </div>
+
+                <div class="card-body p-4 p-md-5">
+                    <p class="text-muted">Cảm ơn bạn <strong>@Model.CustomerName</strong>. Vui lòng mở ứng dụng ngân hàng và quét mã VietQR bên dưới để thanh toán.</p>
+
+                    <!-- Khung ảnh QR Code VietQR tự động sinh -->
+                    <div class="bg-light p-3 rounded-3 d-inline-block border shadow-sm mb-4">
+                        <img src="@ViewBag.QrUrl" alt="Mã VietQR" class="img-fluid rounded" style="max-width: 320px;" />
+                    </div>
+
+                    <!-- Thông tin thanh toán đối soát -->
+                    <div class="text-start bg-light p-3 rounded border mb-4">
+                        <div class="row mb-2">
+                            <div class="col-5 text-muted">Mã đơn hàng:</div>
+                            <div class="col-7 fw-bold text-primary">#@Model.OrderId</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-5 text-muted">Ngân hàng:</div>
+                            <div class="col-7 fw-bold">@ViewBag.BankId</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-5 text-muted">Số tài khoản:</div>
+                            <div class="col-7 fw-bold">@ViewBag.AccountNo</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-5 text-muted">Chủ tài khoản:</div>
+                            <div class="col-7 fw-bold">@ViewBag.AccountName</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-5 text-muted">Số tiền cần chuyển:</div>
+                            <div class="col-7 fw-bold text-danger fs-5">@Model.TotalAmount.ToString("N0") đ</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-5 text-muted">Nội dung chuyển khoản:</div>
+                            <div class="col-7 fw-bold text-dark">
+                                <span class="badge bg-warning text-dark fs-6">@ViewBag.TransferContent</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-primary rounded-pill px-4 py-2">
+                        <i class="fas fa-home me-2"></i>Quay về trang chủ
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

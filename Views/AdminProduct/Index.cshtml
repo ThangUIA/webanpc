@@ -1,0 +1,74 @@
+﻿@model IEnumerable<WebBanPC.Models.Product>
+@{
+    ViewData["Title"] = "Quản Lý Sản Phẩm";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary mb-0"><i class="fas fa-boxes me-2"></i>Quản Lý Sản Phẩm</h2>
+        <a asp-action="Create" class="btn btn-primary rounded-pill px-4 py-2">
+            <i class="fas fa-plus-circle me-2"></i>Thêm sản phẩm mới
+        </a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-3" style="width: 80px;">Hình ảnh</th>
+                            <th>Mã SKU</th>
+                            <th>Tên sản phẩm</th>
+                            <th>Danh mục</th>
+                            <th>Giá bán</th>
+                            <th>Kho</th>
+                            <th class="text-center" style="width: 140px;">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            var img = item.ProductImages.FirstOrDefault(i => i.IsDefault)?.ImageUrl
+                            ?? item.ProductImages.FirstOrDefault()?.ImageUrl
+                            ?? "img/products/default.png";
+                            <tr>
+                                <td class="ps-3">
+                                    <img src="~/@img" class="rounded border" style="width: 60px; height: 60px; object-fit: contain;" alt="@item.Name" />
+                                </td>
+                                <td class="fw-bold">@item.Sku</td>
+                                <td>@item.Name</td>
+                                <td><span class="badge bg-info text-dark">@(item.Category?.CategoryName ?? "Chưa phân loại")</span></td>
+                                <td class="text-danger fw-bold">@item.Price.ToString("N0") đ</td>
+                                <td>
+                                    <span class="badge @(item.StockQuantity > 5 ? "bg-success" : "bg-danger")">
+                                        @item.StockQuantity
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <a asp-action="Edit" asp-route-id="@item.ProductId" class="btn btn-sm btn-outline-primary me-1">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <form asp-action="Delete" asp-route-id="@item.ProductId" method="post" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này?');">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

@@ -51,10 +51,9 @@
                             <a href="#" class="dropdown-item"><i class="fas fa-id-card me-2"></i> Thông tin tài khoản</a>
                             <a href="#" class="dropdown-item"><i class="fas fa-box me-2"></i> Đơn hàng của tôi</a>
 
-                            @if (User.IsInRole("Admin"))
+                            @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Admin"))
                             {
-                                <div class="dropdown-divider"></div>
-                                <a href="/Admin" class="dropdown-item text-danger fw-bold">
+                                <a asp-controller="AdminProduct" asp-action="Index" class="dropdown-item text-danger fw-bold">
                                     <i class="fas fa-user-shield me-2"></i> Trang Quản Trị
                                 </a>
                             }
