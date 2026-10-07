@@ -1,8 +1,9 @@
-﻿using System.Security.Claims;
-using Microsoft.AspNetCore.Authentication;
+﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
+using System.Text.Json;
 using WebBanPC.Models;
 
 namespace WebBanPC.Controllers
@@ -10,6 +11,7 @@ namespace WebBanPC.Controllers
     public class AccountController : Controller
     {
         private readonly PcStoreDbContext _context;
+        private const string GUEST_CART_COOKIE = "PcStore_GuestCart";
 
         public AccountController(PcStoreDbContext context)
         {
@@ -40,9 +42,8 @@ namespace WebBanPC.Controllers
                 return View(model);
             }
 
-            // Tìm Role 'Customer' từ bảng Roles trong DB, nếu chưa có thì lấy RoleId mặc định
             var customerRole = await _context.Roles.FirstOrDefaultAsync(r => r.RoleName == "Customer");
-            int defaultRoleId = customerRole != null ? customerRole.RoleId : 2; // Giả sử 2 là Customer, 1 là Admin
+            int defaultRoleId = customerRole != null ? customerRole.RoleId : 2;
 
             var user = new User
             {
@@ -50,7 +51,7 @@ namespace WebBanPC.Controllers
                 Email = model.Email.Trim().ToLower(),
                 PhoneNumber = model.PhoneNumber.Trim(),
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(model.Password),
-                RoleId = defaultRoleId, // Gán RoleId dạng int, KHÔNG gán user.Role = "Customer"
+                RoleId = defaultRoleId,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -78,7 +79,6 @@ namespace WebBanPC.Controllers
         {
             if (!ModelState.IsValid) return View(model);
 
-            // Bắt buộc .Include(u => u.Role) để lấy được tên quyền
             var user = await _context.Users
                 .Include(u => u.Role)
                 .FirstOrDefaultAsync(u => u.Email.ToLower() == model.Email.Trim().ToLower());
@@ -89,16 +89,15 @@ namespace WebBanPC.Controllers
                 return View(model);
             }
 
-            // Fix lỗi: Lấy RoleName từ navigation property Role
             string roleName = user.Role?.RoleName ?? "Customer";
 
             var claims = new List<Claim>
-    {
-        new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
-        new Claim(ClaimTypes.Name, user.FullName),
-        new Claim(ClaimTypes.Email, user.Email),
-        new Claim(ClaimTypes.Role, roleName) // Dùng roleName dạng chuỗi
-    };
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+                new Claim(ClaimTypes.Name, user.FullName),
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.Role, roleName)
+            };
 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var authProperties = new AuthenticationProperties
@@ -111,6 +110,9 @@ namespace WebBanPC.Controllers
                 CookieAuthenticationDefaults.AuthenticationScheme,
                 new ClaimsPrincipal(identity),
                 authProperties);
+
+            // GỘP GIỎ HÀNG TỪ COOKIE VÀO CSDL CHO TÀI KHOẢN VỪA ĐĂNG NHẬP
+            await MigrateGuestCartToDbAsync(user.UserId);
 
             if (!string.IsNullOrEmpty(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
             {
@@ -127,6 +129,58 @@ namespace WebBanPC.Controllers
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Index", "Home");
+        }
+
+        // Hàm chuyển sản phẩm từ Cookie vào Database sau khi đăng nhập
+        private async Task MigrateGuestCartToDbAsync(int userId)
+        {
+            // 1. Đọc giỏ hàng vãng lai từ Cookie
+            var cookieData = Request.Cookies[GUEST_CART_COOKIE];
+            if (string.IsNullOrEmpty(cookieData)) return;
+
+            List<CartItem>? guestCart = null;
+            try
+            {
+                guestCart = JsonSerializer.Deserialize<List<CartItem>>(cookieData);
+            }
+            catch
+            {
+                return;
+            }
+
+            if (guestCart == null || !guestCart.Any()) return;
+
+            // 2. Lấy giỏ hàng hiện có trong Database của tài khoản này
+            var userDbCart = await _context.Carts
+                .Where(c => c.UserId == userId)
+                .ToListAsync();
+
+            // 3. Duyệt từng món từ Cookie để cộng dồn hoặc thêm mới vào DB
+            foreach (var guestItem in guestCart)
+            {
+                var existingItem = userDbCart.FirstOrDefault(c => c.ProductId == guestItem.ProductId);
+
+                if (existingItem != null)
+                {
+                    existingItem.Quantity += guestItem.Quantity;
+                }
+                else
+                {
+                    _context.Carts.Add(new Cart
+                    {
+                        UserId = userId,
+                        ProductId = guestItem.ProductId,
+                        Quantity = guestItem.Quantity,
+                        CreatedAt = DateTime.Now
+                    });
+                }
+            }
+
+            // 4. Lưu vào SQL Server
+            await _context.SaveChangesAsync();
+
+            // 5. Xóa Cookie của khách vãng lai
+            Response.Cookies.Delete(GUEST_CART_COOKIE);
         }
     }
 }

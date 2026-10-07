@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using System.Text.Json;
@@ -9,11 +10,12 @@ namespace WebBanPC.Controllers
     public class OrderController : Controller
     {
         private readonly PcStoreDbContext _context;
-        private const string CART_KEY = "MyCartSession";
+        private const string GUEST_CART_COOKIE = "PcStore_GuestCart";
+
 
         // Cấu hình tài khoản ngân hàng nhận tiền qua VietQR
         private const string BANK_ID = "MB"; // Mã ngân hàng: MB, VCB, ICB, ACB, VPB...
-        private const string ACCOUNT_NO = "0988888888"; // Số tài khoản thụ hưởng của bạn
+        private const string ACCOUNT_NO = "0988888888"; // Số tài khoản thụ hưởng
         private const string ACCOUNT_NAME = "NGUYEN VAN A"; // Tên chủ tài khoản không dấu
 
         public OrderController(PcStoreDbContext context)
@@ -21,19 +23,64 @@ namespace WebBanPC.Controllers
             _context = context;
         }
 
-        private List<CartItem> GetCartItems()
+        // Helper lấy UserId của tài khoản đang đăng nhập
+        private int? GetCurrentUserId()
         {
-            var sessionData = HttpContext.Session.GetString(CART_KEY);
-            return string.IsNullOrEmpty(sessionData)
-                ? new List<CartItem>()
-                : JsonSerializer.Deserialize<List<CartItem>>(sessionData) ?? new List<CartItem>();
+            var idClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (int.TryParse(idClaim, out int uid))
+            {
+                return uid;
+            }
+            return null;
+        }
+
+        // Helper lấy giỏ hàng tổng quát (nếu đăng nhập thì đọc DB, chưa đăng nhập thì đọc Cookie)
+        private async Task<List<CartItem>> GetCurrentCartItemsAsync()
+        {
+            var userId = GetCurrentUserId();
+            if (userId != null)
+            {
+                var cartData = await _context.Carts
+                    .Include(c => c.Product)
+                        .ThenInclude(p => p.ProductImages)
+                    .Where(c => c.UserId == userId.Value)
+                    .ToListAsync();
+
+                return cartData.Select(c => new CartItem
+                {
+                    ProductId = c.ProductId,
+                    Name = c.Product?.Name ?? string.Empty,
+                    Sku = c.Product?.Sku ?? string.Empty,
+                    Price = c.Product?.Price ?? 0,
+                    Quantity = c.Quantity,
+                    ImageUrl = c.Product?.ProductImages.FirstOrDefault(i => i.IsDefault)?.ImageUrl
+                               ?? c.Product?.ProductImages.FirstOrDefault()?.ImageUrl
+                               ?? "img/products/default.png"
+                }).ToList();
+            }
+            else
+            {
+                var cookieData = Request.Cookies[GUEST_CART_COOKIE];
+                if (string.IsNullOrEmpty(cookieData)) return new List<CartItem>();
+                try
+                {
+                    return JsonSerializer.Deserialize<List<CartItem>>(cookieData) ?? new List<CartItem>();
+                }
+                catch
+                {
+                    return new List<CartItem>();
+                }
+            }
         }
 
         // GET: /Order/Checkout
         [HttpGet]
-        public IActionResult Checkout()
+        public async Task<IActionResult> Checkout()
         {
-            var cart = GetCartItems();
+            var userId = GetCurrentUserId();
+            if (userId == null) return Challenge();
+
+            var cart = await GetCurrentCartItemsAsync();
             if (!cart.Any())
             {
                 return RedirectToAction("Index", "Cart");
@@ -41,16 +88,10 @@ namespace WebBanPC.Controllers
 
             var vm = new CheckoutVM
             {
-                CartItems = cart
+                CartItems = cart,
+                CustomerName = User.Identity?.Name ?? string.Empty,
+                CustomerEmail = User.FindFirst(ClaimTypes.Email)?.Value ?? string.Empty
             };
-
-            // Nếu người dùng đã đăng nhập, tự điền sẵn tên/email nếu có
-            if (User.Identity?.IsAuthenticated == true)
-            {
-                vm.CustomerName = User.Identity.Name ?? string.Empty;
-                var emailClaim = User.FindFirst(ClaimTypes.Email)?.Value;
-                if (!string.IsNullOrEmpty(emailClaim)) vm.CustomerEmail = emailClaim;
-            }
 
             return View(vm);
         }
@@ -60,7 +101,9 @@ namespace WebBanPC.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Checkout(CheckoutVM vm)
         {
-            var cart = GetCartItems();
+            var userId = GetCurrentUserId();
+
+            var cart = await GetCurrentCartItemsAsync();
             if (!cart.Any())
             {
                 return RedirectToAction("Index", "Cart");
@@ -70,18 +113,10 @@ namespace WebBanPC.Controllers
 
             if (ModelState.IsValid)
             {
-                // Lấy UserId nếu đã đăng nhập
-                int? currentUserId = null;
-                var idClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (int.TryParse(idClaim, out int uid))
-                {
-                    currentUserId = uid;
-                }
-
                 // 1. Tạo bản ghi Order
                 var order = new Order
                 {
-                    UserId = currentUserId,
+                    UserId = userId.Value,
                     CustomerName = vm.CustomerName,
                     CustomerPhone = vm.CustomerPhone,
                     CustomerEmail = vm.CustomerEmail ?? string.Empty,
@@ -108,12 +143,15 @@ namespace WebBanPC.Controllers
                     _context.OrderDetails.Add(detail);
                 }
 
+                // 3. Dọn sạch giỏ hàng trong bảng Carts của User này
+                var userCartEntries = await _context.Carts
+                    .Where(c => c.UserId == userId.Value)
+                    .ToListAsync();
+                _context.Carts.RemoveRange(userCartEntries);
+
                 await _context.SaveChangesAsync();
 
-                // 3. Xóa giỏ hàng sau khi đặt thành công
-                HttpContext.Session.Remove(CART_KEY);
-
-                // Chuyển hướng sang trang hiển thị mã QR thanh toán
+                // 4. Chuyển sang trang xuất mã VietQR
                 return RedirectToAction(nameof(Payment), new { id = order.OrderId });
             }
 
@@ -130,10 +168,7 @@ namespace WebBanPC.Controllers
 
             if (order == null) return NotFound();
 
-            // Cú pháp nội dung chuyển khoản: PC<Mã Đơn>
             string transferContent = $"PC{order.OrderId}";
-
-            // Tạo link ảnh VietQR động dạng QuickLink
             string qrUrl = $"https://img.vietqr.io/image/{BANK_ID}-{ACCOUNT_NO}-compact2.png?amount={order.TotalAmount:0}&addInfo={transferContent}&accountName={Uri.EscapeDataString(ACCOUNT_NAME)}";
 
             ViewBag.QrUrl = qrUrl;
