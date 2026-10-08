@@ -58,7 +58,7 @@ namespace WebBanPC
 
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=Home}/{action=Index}/{id?}");
+                pattern: "{controller=TrangChu}/{action=Index}/{id?}");
 
             app.Run();
         }

@@ -1,13 +1,43 @@
 ﻿@model WebBanPC.Models.Product
 
 @{
+    bool isEditMode = Context.Session.GetString("Admin_Visual_Edit_Mode") == "true"
+                      && User.Identity?.IsAuthenticated == true
+                      && User.IsInRole("Admin");
+}
+@{
     // Lấy ảnh đại diện chính (IsDefault == true) hoặc lấy ảnh đầu tiên, nếu không có lấy ảnh mặc định
     var mainImage = Model.ProductImages.FirstOrDefault(x => x.IsDefault)?.ImageUrl
                     ?? Model.ProductImages.FirstOrDefault()?.ImageUrl
                     ?? "img/product-3.png";
 }
 
-<div class="col-lg-4">
+<!-- 1. THÊM position-relative VÀO ĐÂY ĐỂ CÁC NÚT CÔNG CỤ ĐỊNH VỊ CHUẨN XÁC -->
+<div class="col-lg-4 position-relative">
+
+    <!-- 2. ĐẶT BẢNG NÚT SỬA/XÓA CỦA ADMIN VÀO ĐÂY (CHỈ HIỂN THỊ KHI Ở ADMIN EDIT MODE) -->
+    @if (isEditMode)
+    {
+        <div class="position-absolute top-0 end-0 m-3 d-flex gap-1" style="z-index: 100;">
+            <!-- Nút sửa sản phẩm -->
+            <a asp-controller="AdminProduct" asp-action="Edit" asp-route-id="@Model.ProductId"
+               target="_blank"
+               class="btn btn-sm btn-warning rounded-circle shadow p-2"
+               title="Sửa sản phẩm này">
+                <i class="fas fa-pencil-alt"></i>
+            </a>
+
+            <!-- Nút xóa sản phẩm -->
+            <form asp-controller="AdminProduct" asp-action="Delete" asp-route-id="@Model.ProductId" method="post"
+                  onsubmit="return confirm('Bạn có chắc muốn xóa sản phẩm này khỏi hệ thống?');" class="d-inline">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-sm btn-danger rounded-circle shadow p-2" title="Xóa sản phẩm">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </form>
+        </div>
+    }
+
     <div class="product-item rounded wow fadeInUp" data-wow-delay="0.1s">
         <div class="product-item-inner border rounded">
             <div class="product-item-inner-item">

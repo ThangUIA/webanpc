@@ -1,59 +1,89 @@
 ﻿@model WebBanPC.Models.Product
 
 @{
-    var mainImage = Model.ProductImages.FirstOrDefault(x => x.IsDefault)?.ImageUrl
-                    ?? Model.ProductImages.FirstOrDefault()?.ImageUrl
+    bool isEditMode = Context.Session.GetString("Admin_Visual_Edit_Mode") == "true"
+                      && User.Identity?.IsAuthenticated == true
+                      && User.IsInRole("Admin");
+}
+@{
+    var mainImage = Model.ProductImages?.FirstOrDefault(x => x.IsDefault)?.ImageUrl
+                    ?? Model.ProductImages?.FirstOrDefault()?.ImageUrl
                     ?? "img/product-3.png";
 }
 
-<div class="col-lg-6">
-    <div class="products-mini-item border rounded">
-        <div class="row g-0 align-items-center">
-            <div class="col-5">
-                <div class="products-mini-img border-end h-100 position-relative p-2">
-                    <img src="~/@mainImage" class="img-fluid w-100 rounded" alt="@Model.Name" style="height: 160px; object-fit: contain;">
-                    @if (Model.IsNew)
-                    {
-                        <div class="product-new">New</div>
-                    }
-                    <div class="products-mini-icon rounded-circle bg-primary">
-                        <a asp-controller="Product" asp-action="Details" asp-route-id="@Model.ProductId">
-                            <i class="fa fa-eye fa-1x text-white"></i>
-                        </a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-7">
-                <div class="products-mini-content p-3">
-                    <a href="#" class="d-block mb-1 text-muted small">@Model.Category?.CategoryName</a>
-                    <a asp-controller="Product" asp-action="Details" asp-route-id="@Model.ProductId" class="d-block h5 text-truncate" title="@Model.Name">
-                        @Model.Name
+<!-- THÊM position-relative VÀO THẺ BAO NGOÀI -->
+<div class="products-mini-item border rounded position-relative">
+
+    <!-- CỤM NÚT SỬA / XÓA ADMIN HIỆN Ở GÓC TRÊN -->
+    @if (isEditMode)
+    {
+        <div class="position-absolute top-0 end-0 m-2 d-flex gap-1" style="z-index: 100;">
+            <!-- Nút sửa sản phẩm -->
+            <a asp-controller="AdminProduct" asp-action="Edit" asp-route-id="@Model.ProductId"
+               target="_blank"
+               class="btn btn-sm btn-warning rounded-circle shadow p-1"
+               style="width: 28px; height: 28px; line-height: 18px;"
+               title="Sửa sản phẩm">
+                <i class="fas fa-pencil-alt" style="font-size: 11px;"></i>
+            </a>
+
+            <!-- Nút xóa sản phẩm -->
+            <form asp-controller="AdminProduct" asp-action="Delete" asp-route-id="@Model.ProductId" method="post"
+                  onsubmit="return confirm('Bạn có chắc muốn xóa sản phẩm này?');" class="d-inline">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-sm btn-danger rounded-circle shadow p-1"
+                        style="width: 28px; height: 28px; line-height: 18px;"
+                        title="Xóa sản phẩm">
+                    <i class="fas fa-trash" style="font-size: 11px;"></i>
+                </button>
+            </form>
+        </div>
+    }
+
+    <div class="row g-0 align-items-center">
+        <!-- Cột ảnh bên trái -->
+        <div class="col-5">
+            <div class="products-mini-img border-end h-100 p-2 text-center">
+                <img src="~/@mainImage" class="img-fluid" alt="@Model.Name" style="max-height: 110px; object-fit: contain;">
+                <div class="products-mini-icon rounded-circle bg-primary">
+                    <a asp-controller="Product" asp-action="Details" asp-route-id="@Model.ProductId">
+                        <i class="fa fa-eye fa-1x text-white"></i>
                     </a>
-                    <div class="mt-2">
-                        @if (Model.OldPrice.HasValue && Model.OldPrice > Model.Price)
-                        {
-                            <del class="me-2 fs-6 text-muted">@Model.OldPrice.Value.ToString("N0") đ</del>
-                        }
-                        <span class="text-primary fs-5 fw-bold">@Model.Price.ToString("N0") đ</span>
-                    </div>
                 </div>
             </div>
         </div>
-        <div class="products-mini-add border-top p-3 d-flex justify-content-between align-items-center">
-            <button type="button"
-                    class="btn btn-primary rounded-pill px-3 py-2 text-white border-0 btn-add-to-cart"
-                    data-product-id="@Model.ProductId"
-                    data-product-name="@Model.Name">
-                <i class="fas fa-shopping-cart me-2"></i>Thêm vào giỏ
-            </button>
-            <div class="d-flex">
-                <a href="#" class="text-primary d-flex align-items-center justify-content-center me-3">
-                    <span class="rounded-circle btn-sm-square border"><i class="fas fa-random"></i></span>
+
+        <!-- Cột thông tin bên phải -->
+        <div class="col-7">
+            <div class="products-mini-content p-3">
+                <a href="#" class="d-block mb-1 text-muted small">@Model.Category?.CategoryName</a>
+                <a asp-controller="Product" asp-action="Details" asp-route-id="@Model.ProductId"
+                   class="d-block h6 text-truncate mb-2" title="@Model.Name">
+                    @Model.Name
                 </a>
-                <a href="#" class="text-primary d-flex align-items-center justify-content-center me-0">
-                    <span class="rounded-circle btn-sm-square border"><i class="fas fa-heart"></i></span>
-                </a>
+                <div>
+                    @if (Model.OldPrice.HasValue && Model.OldPrice > Model.Price)
+                    {
+                        <del class="me-2 fs-6 text-muted">@Model.OldPrice.Value.ToString("N0") đ</del>
+                    }
+                    <span class="text-primary fw-bold">@Model.Price.ToString("N0") đ</span>
+                </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Dòng nút Thêm vào giỏ hàng dưới cùng -->
+    <div class="products-mini-add border-top p-2 d-flex justify-content-between align-items-center">
+        <button type="button"
+                class="btn btn-sm btn-primary rounded-pill px-3 text-white border-0 btn-add-to-cart"
+                data-product-id="@Model.ProductId"
+                data-product-name="@Model.Name">
+            <i class="fas fa-shopping-cart me-1"></i>Thêm giỏ
+        </button>
+
+        <div class="d-flex">
+            <a href="#" class="text-primary me-2"><i class="fas fa-random"></i></a>
+            <a href="#" class="text-primary"><i class="fas fa-heart"></i></a>
         </div>
     </div>
 </div>

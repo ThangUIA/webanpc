@@ -18,6 +18,7 @@ public partial class PcStoreDbContext : DbContext
     public virtual DbSet<Cart> Carts { get; set; }
 
     public virtual DbSet<Attribute> Attributes { get; set; }
+    public virtual DbSet<Banner> Banners { get; set; }
 
     public virtual DbSet<Brand> Brands { get; set; }
 

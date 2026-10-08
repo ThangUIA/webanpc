@@ -1,0 +1,342 @@
+﻿@model WebBanPC.Models.HomeIndexVM
+@{
+    ViewData["Title"] = "Trang Chủ - Thế Giới Linh Kiện PC";
+}
+
+@{
+    bool isEditMode = Context.Session.GetString("Admin_Visual_Edit_Mode") == "true"
+                      && User.Identity?.IsAuthenticated == true
+                      && User.IsInRole("Admin");
+}
+
+<!-- Carousel Banner Đầu Trang -->
+<div class="container-fluid carousel bg-light px-0">
+    <div class="row g-0 justify-content-end">
+        <!-- ĐÃ BỔ SUNG: position-relative để cố định nút Thêm Banner -->
+        <div class="col-12 col-lg-7 col-xl-9 position-relative">
+            @if (isEditMode)
+            {
+                <div class="position-absolute top-0 start-0 m-3" style="z-index: 105;">
+                    <button type="button" class="btn btn-success btn-sm rounded-pill shadow-lg px-3 py-2 fw-bold" onclick="openCreateBannerModal()">
+                        <i class="fas fa-plus-circle me-1"></i> Thêm Banner Mới
+                    </button>
+                </div>
+            }
+
+            <div class="header-carousel owl-carousel bg-light py-5">
+                @if (Model.MainBanners != null && Model.MainBanners.Any())
+                {
+                    @foreach (var b in Model.MainBanners)
+                    {
+                        <div class="row g-0 header-carousel-item align-items-center position-relative" id="banner-item-@b.BannerId">
+
+                            <!-- NÚT SỬA BANNER: Thon gọn, bo tròn chuẩn giống nút Thêm Banner -->
+                            @if (isEditMode)
+                            {
+                                <div class="position-absolute top-0 end-0 m-3" style="z-index: 105;">
+                                    <button type="button"
+                                            class="btn btn-warning btn-sm rounded-pill shadow-lg px-3 py-2 fw-bold text-dark w-auto d-inline-flex align-items-center border-0"
+                                            onclick="openEditBannerModal(@b.BannerId, '@Html.Raw(b.Title)', '@Html.Raw(b.Subtitle)', '@Html.Raw(b.LinkUrl)')">
+                                        <i class="fas fa-edit me-1"></i> Sửa Banner
+                                    </button>
+                                </div>
+                            }
+
+                            <!-- Cột ảnh banner -->
+                            <div class="col-xl-6 carousel-img wow fadeInLeft" data-wow-delay="0.1s">
+                                <img id="banner-img-@b.BannerId" src="~/@b.ImageUrl" class="img-fluid w-100" alt="@b.Title" style="max-height: 380px; object-fit: contain;">
+                            </div>
+
+                            <!-- Cột nội dung chữ -->
+                            <div class="col-xl-6 carousel-content p-4">
+                                <h5 class="text-uppercase fw-bold mb-3 wow fadeInRight text-primary" data-wow-delay="0.1s" style="letter-spacing: 2px;">HOT PROMO</h5>
+                                <h1 id="banner-title-@b.BannerId" class="display-4 text-capitalize mb-3 wow fadeInRight" data-wow-delay="0.3s">@b.Title</h1>
+
+                                @if (!string.IsNullOrWhiteSpace(b.Subtitle))
+                                {
+                                    <p id="banner-sub-@b.BannerId" class="text-muted fs-5 mb-4 wow fadeInRight" data-wow-delay="0.5s">@b.Subtitle</p>
+                                }
+
+                                <!-- Nút bấm chuyển hướng (Đổi chữ thành 'Mua Ngay' hoặc 'Xem Ngay') -->
+                                <a class="btn btn-primary rounded-pill py-3 px-5 wow fadeInRight fw-bold shadow-sm" data-wow-delay="0.7s" href="@b.LinkUrl">
+                                    <i class="fas fa-shopping-bag me-2"></i>Mua Ngay
+                                </a>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+
+        <div class="col-12 col-lg-5 col-xl-3 wow fadeInRight" data-wow-delay="0.1s">
+            <div class="carousel-header-banner h-100">
+                <img src="~/img/header-img.jpg" class="img-fluid w-100 h-100" style="object-fit: cover;" alt="Ưu đãi nóng">
+                <div class="carousel-banner-offer">
+                    <p class="bg-primary text-white rounded fs-5 py-2 px-4 mb-0 me-3">Sale Khủng</p>
+                    <p class="text-primary fs-5 fw-bold mb-0">HOT DEAL</p>
+                </div>
+                <div class="carousel-banner">
+                    <div class="carousel-banner-content text-center p-4">
+                        <span class="d-block text-warning mb-2">Build PC Trọn Gói</span>
+                        <h4 class="text-white">Giảm Đến 20% Toàn Bộ Linh Kiện</h4>
+                        <a asp-controller="Home" asp-action="Index" class="btn btn-primary rounded-pill py-2 px-4 mt-3">
+                            <i class="fas fa-arrow-right me-2"></i>Khám phá
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Dịch vụ tiện ích (Services) -->
+<partial name="_P_Searvices" />
+
+<!-- Khối Tabs Sản Phẩm (Our Products) -->
+<div class="container-fluid product py-5">
+    <div class="container py-5">
+        <div class="tab-class">
+            <div class="row g-4">
+                <div class="col-lg-4 text-start wow fadeInLeft" data-wow-delay="0.1s">
+                    <h1 class="text-primary fw-bold">Sản Phẩm Của Chúng Tôi</h1>
+                </div>
+                <div class="col-lg-8 text-end wow fadeInRight" data-wow-delay="0.1s">
+                    <ul class="nav nav-pills d-inline-flex text-center mb-5">
+                        <li class="nav-item mb-4">
+                            <a class="d-flex mx-2 py-2 bg-light rounded-pill active" data-bs-toggle="pill" href="#tab-all">
+                                <span class="text-dark px-3">Tất Cả</span>
+                            </a>
+                        </li>
+                        <li class="nav-item mb-4">
+                            <a class="d-flex py-2 mx-2 bg-light rounded-pill" data-bs-toggle="pill" href="#tab-new">
+                                <span class="text-dark px-3">Hàng Mới Về</span>
+                            </a>
+                        </li>
+                        <li class="nav-item mb-4">
+                            <a class="d-flex mx-2 py-2 bg-light rounded-pill" data-bs-toggle="pill" href="#tab-featured">
+                                <span class="text-dark px-3">Nổi Bật</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="tab-content">
+                <!-- Tab 1: Tất Cả -->
+                <div id="tab-all" class="tab-pane fade show p-0 active">
+                    <div class="row g-4">
+                        @foreach (var item in Model.AllProducts)
+                        {
+                            <partial name="_P_ProductItemPartial" model="item" />
+                        }
+                    </div>
+                </div>
+
+                <!-- Tab 2: Hàng Mới Về -->
+                <div id="tab-new" class="tab-pane fade show p-0">
+                    <div class="row g-4">
+                        @foreach (var item in Model.NewArrivals)
+                        {
+                            <partial name="_P_ProductItemPartial" model="item" />
+                        }
+                    </div>
+                </div>
+
+                <!-- Tab 3: Nổi Bật -->
+                <div id="tab-featured" class="tab-pane fade show p-0">
+                    <div class="row g-4">
+                        @foreach (var item in Model.FeaturedProducts)
+                        {
+                            <partial name="_P_ProductItemPartial" model="item" />
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Banner Giảm Giá Giữa Trang -->
+<partial name="_P_ProductsOffer" />
+
+<!-- Bestseller Products (Sản Phẩm Bán Chạy) -->
+<div class="container-fluid products pb-5">
+    <div class="container products-mini py-5">
+        <div class="mx-auto text-center mb-5" style="max-width: 700px;">
+            <h4 class="text-primary mb-3 border-bottom border-primary border-2 d-inline-block p-2 title-border-radius wow fadeInUp" data-wow-delay="0.1s">TOP BÁN CHẠY</h4>
+            <h2 class="mb-0 display-6 wow fadeInUp" data-wow-delay="0.3s">Linh Kiện Bán Chạy Nhất</h2>
+        </div>
+        <div class="row g-4">
+            @foreach (var item in Model.BestSellers)
+            {
+                <div class="col-md-6 col-lg-6 col-xl-4 wow fadeInUp" data-wow-delay="0.1s">
+                    <partial name="_P_ProductListItemPartial" model="item" />
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================== -->
+<!-- MODAL VÀ JAVASCRIPT CHO ADMIN (CHỈ TẢI KHI BẬT ADMIN EDIT MODE) -->
+<!-- ============================================================== -->
+@if (isEditMode)
+{
+    <!-- 1. Modal Thêm Banner -->
+    <div class="modal fade" id="modalCreateBanner" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title"><i class="fas fa-plus-circle me-2"></i>Thêm Banner Mới</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="formCreateBanner" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Tiêu đề Banner <span class="text-danger">*</span></label>
+                            <input type="text" name="title" class="form-control" placeholder="VD: GIÁ RẺ VÔ ĐỊCH" required />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Phụ đề / Khuyến mãi</label>
+                            <input type="text" name="subtitle" class="form-control" placeholder="VD: Bảo hành chính hãng 36 tháng" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Link liên kết</label>
+                            <input type="text" name="linkUrl" class="form-control" value="/Home/Index" />
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Vị trí</label>
+                                <select name="position" class="form-select">
+                                    <option value="MainCarousel">Main Carousel (Slider chính)</option>
+                                    <option value="HeaderRight">Header Right (Góc phải)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Thứ tự</label>
+                                <input type="number" name="displayOrder" class="form-control" value="1" min="1" />
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Hình ảnh Banner <span class="text-danger">*</span></label>
+                            <input type="file" name="imageFile" class="form-control" accept="image/*" required />
+                        </div>
+                        <div class="text-end pt-2">
+                            <button type="button" class="btn btn-secondary rounded-pill px-3" data-bs-dismiss="modal">Hủy</button>
+                            <button type="submit" class="btn btn-success rounded-pill px-4 fw-bold">Tạo Banner</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Modal Sửa Banner -->
+    <div class="modal fade" id="modalEditBanner" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title"><i class="fas fa-edit me-2"></i>Chỉnh Sửa Banner</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="formEditBanner" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" id="editBannerId" name="bannerId" />
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Tiêu đề Banner <span class="text-danger">*</span></label>
+                            <input type="text" id="editBannerTitle" name="title" class="form-control" required />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Phụ đề</label>
+                            <input type="text" id="editBannerSub" name="subtitle" class="form-control" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Link liên kết</label>
+                            <input type="text" id="editBannerLink" name="linkUrl" class="form-control" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Đổi ảnh mới (để trống nếu không đổi)</label>
+                            <input type="file" name="imageFile" class="form-control" accept="image/*" />
+                        </div>
+                        <div class="text-end pt-2">
+                            <button type="button" class="btn btn-secondary rounded-pill px-3" data-bs-dismiss="modal">Hủy</button>
+                            <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">Lưu Thay Đổi</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @section Scripts {
+        <script>
+            function openCreateBannerModal() {
+                $('#formCreateBanner')[0].reset();
+                $('#modalCreateBanner').modal('show');
+            }
+
+            function openEditBannerModal(id, title, sub, link) {
+                $('#editBannerId').val(id);
+                $('#editBannerTitle').val(title);
+                $('#editBannerSub').val(sub);
+                $('#editBannerLink').val(link);
+                $('#modalEditBanner').modal('show');
+            }
+
+            // AJAX tạo mới Banner
+            $('#formCreateBanner').on('submit', function (e) {
+                e.preventDefault();
+                var formData = new FormData(this);
+
+                $.ajax({
+                    url: '/AdminBanner/Create',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function () {
+                        $('#modalCreateBanner').modal('hide');
+                        alert('Thêm Banner thành công!');
+                        location.reload();
+                    },
+                    error: function () {
+                        alert('Có lỗi xảy ra khi tạo Banner.');
+                    }
+                });
+            });
+
+            // AJAX sửa Banner
+            $('#formEditBanner').on('submit', function (e) {
+                e.preventDefault();
+                var formData = new FormData(this);
+                var bannerId = $('#editBannerId').val();
+
+                $.ajax({
+                    url: '/AdminProduct/QuickUpdateBanner',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (res) {
+                        if (res.success) {
+                            $('#banner-title-' + bannerId).text(res.newTitle);
+                            $('#banner-sub-' + bannerId).text(res.newSubtitle);
+                            if (res.newImageUrl) {
+                                $('#banner-img-' + bannerId).attr('src', '/' + res.newImageUrl);
+                            }
+                            $('#modalEditBanner').modal('hide');
+                            alert('Cập nhật Banner thành công!');
+                        } else {
+                            alert(res.message);
+                        }
+                    },
+                    error: function () {
+                        alert('Có lỗi xảy ra khi lưu Banner.');
+                    }
+                });
+            });
+        </script>
+    }
+}

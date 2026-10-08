@@ -53,9 +53,11 @@
 
                             @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Admin"))
                             {
-                                <a asp-controller="AdminProduct" asp-action="Index" class="dropdown-item text-danger fw-bold">
-                                    <i class="fas fa-user-shield me-2"></i> Trang Quản Trị
-                                </a>
+                                <li>
+                                    <a asp-controller="AdminMode" asp-action="Enable" asp-route-returnUrl="@Context.Request.Path@Context.Request.QueryString" class="dropdown-item text-danger fw-bold">
+                                        <i class="fas fa-user-shield me-2"></i> Bật Quản Lý Trang
+                                    </a>
+                                </li>
                             }
 
                             <div class="dropdown-divider"></div>
