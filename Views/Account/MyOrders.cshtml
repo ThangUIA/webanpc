@@ -1,0 +1,113 @@
+﻿@model IEnumerable<WebBanPC.Models.Order>
+@{
+    ViewData["Title"] = "Đơn Hàng Của Tôi";
+}
+
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="text-primary mb-0"><i class="fas fa-boxes me-2"></i>Lịch Sử Đơn Hàng</h3>
+        <a asp-controller="Home" asp-action="Index" class="btn btn-outline-primary rounded-pill btn-sm px-3">
+            <i class="fas fa-shopping-bag me-1"></i> Tiếp tục mua hàng
+        </a>
+    </div>
+
+    <!-- Thông báo kết quả thao tác -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            <i class="fas fa-check-circle me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">
+            <i class="fas fa-exclamation-triangle me-2"></i>@TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="card border-0 shadow-sm p-5 text-center">
+            <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+            <h5>Bạn chưa có đơn hàng nào!</h5>
+            <p class="text-muted">Hãy dạo quanh cửa hàng và chọn cho mình linh kiện phù hợp nhé.</p>
+            <div>
+                <a asp-controller="Home" asp-action="Index" class="btn btn-primary rounded-pill px-4 py-2 fw-bold">Mua Sắm Ngay</a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card border-0 shadow-sm">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Mã Đơn</th>
+                            <th>Ngày Đặt</th>
+                            <th>Địa Chỉ Nhận</th>
+                            <th>Tổng Tiền</th>
+                            <th>Trạng Thái</th>
+                            <th class="text-center" style="width: 180px;">Thao Tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var order in Model)
+                        {
+                            <tr>
+                                <td class="fw-bold text-primary">#@order.OrderId</td>
+                                <td>@order.OrderDate?.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td class="text-truncate" style="max-width: 250px;" title="@order.ShippingAddress">
+                                    @order.ShippingAddress
+                                </td>
+                                <td class="fw-bold text-danger">@order.TotalAmount.ToString("N0") đ</td>
+                                <td>
+                                    @switch (order.OrderStatus)
+                                    {
+                                        case 1:
+                                            <span class="badge bg-warning text-dark">Chờ xác nhận</span>
+                                            break;
+                                        case 2:
+                                            <span class="badge bg-info text-dark">Đang giao hàng</span>
+                                            break;
+                                        case 3:
+                                            <span class="badge bg-success">Đã hoàn thành</span>
+                                            break;
+                                        case 4:
+                                            <span class="badge bg-danger">Đã hủy</span>
+                                            break;
+                                        default:
+                                            <span class="badge bg-secondary">Khác</span>
+                                            break;
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    <div class="d-flex justify-content-center gap-1">
+                                        <!-- Nút Xem chi tiết -->
+                                        <a asp-action="OrderDetails" asp-route-id="@order.OrderId" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                            <i class="fas fa-eye me-1"></i> Xem
+                                        </a>
+
+                                        <!-- Nút Hủy đơn: Chỉ hiển thị khi đơn đang ở trạng thái Chờ xác nhận (1) -->
+                                        @if (order.OrderStatus == 1)
+                                        {
+                                            <form asp-action="CancelOrder" asp-route-id="@order.OrderId" method="post"
+                                                  onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn hàng #@order.OrderId này không?');" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-2">
+                                                    <i class="fas fa-times me-1"></i> Hủy
+                                                </button>
+                                            </form>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>

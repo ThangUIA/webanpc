@@ -48,8 +48,15 @@
                             </small>
                         </a>
                         <div class="dropdown-menu rounded shadow-sm">
-                            <a href="#" class="dropdown-item"><i class="fas fa-id-card me-2"></i> Thông tin tài khoản</a>
-                            <a href="#" class="dropdown-item"><i class="fas fa-box me-2"></i> Đơn hàng của tôi</a>
+                            <!-- 1. THÔNG TIN TÀI KHOẢN -->
+                            <a asp-controller="Account" asp-action="Profile" class="dropdown-item">
+                                <i class="fas fa-id-card me-2 text-primary"></i> Thông tin tài khoản
+                            </a>
+
+                            <!-- 2. ĐƠN HÀNG CỦA TÔI -->
+                            <a asp-controller="Account" asp-action="MyOrders" class="dropdown-item">
+                                <i class="fas fa-box me-2 text-primary"></i> Đơn hàng của tôi
+                            </a>
 
                             @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Admin"))
                             {
@@ -127,8 +134,8 @@
                 <a href="#" class="text-muted d-flex align-items-center justify-content-center me-3">
                     <span class="rounded-circle btn-md-square border"><i class="fas fa-random"></i></i>
                 </a>
-                <a href="#" class="text-muted d-flex align-items-center justify-content-center me-3">
-                    <span class="rounded-circle btn-md-square border"><i class="fas fa-heart"></i>
+                <a asp-controller="Wishlist" asp-action="Index" class="text-muted d-flex align-items-center justify-content-center me-3" title="Danh sách yêu thích">
+                    <span class="rounded-circle btn-md-square border"><i class="fas fa-heart text-danger"></i></span>
                 </a>
                 <a asp-controller="Cart" asp-action="Index" class="text-muted d-flex align-items-center justify-content-center text-decoration-none">
                     <span class="rounded-circle btn-md-square border position-relative">

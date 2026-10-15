@@ -1,0 +1,77 @@
+﻿@model WebBanPC.Models.Order
+@{
+    ViewData["Title"] = "Chi Tiết Đơn Hàng #" + Model.OrderId;
+}
+
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4>Chi Tiết Đơn Hàng <span class="text-primary">#@Model.OrderId</span></h4>
+        <a asp-action="MyOrders" class="btn btn-outline-secondary rounded-pill btn-sm px-3">
+            <i class="fas fa-arrow-left me-1"></i> Trở Lại Danh Sách
+        </a>
+    </div>
+
+    <div class="row g-4">
+        <!-- Thông tin giao nhận -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm p-4 h-100">
+                <h6 class="fw-bold text-primary border-bottom pb-2 mb-3">Thông Tin Giao Hàng</h6>
+                <p class="mb-2"><strong>Người nhận:</strong> @Model.CustomerName</p>
+                <p class="mb-2"><strong>Điện thoại:</strong> @Model.CustomerPhone</p>
+                <p class="mb-2"><strong>Email:</strong> @Model.CustomerEmail</p>
+                <p class="mb-2"><strong>Địa chỉ:</strong> @Model.ShippingAddress</p>
+                @if (!string.IsNullOrWhiteSpace(Model.Note))
+                {
+                    <p class="mb-2 text-muted"><strong>Ghi chú:</strong> @Model.Note</p>
+                }
+                <hr />
+                <p class="mb-0"><strong>Ngày đặt:</strong> @Model.OrderDate?.ToString("dd/MM/yyyy HH:mm")</p>
+            </div>
+        </div>
+
+        <!-- Danh sách sản phẩm của đơn hàng -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm p-4">
+                <h6 class="fw-bold text-primary border-bottom pb-2 mb-3">Sản Phẩm Đã Đặt</h6>
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Sản phẩm</th>
+                                <th class="text-center">Đơn giá</th>
+                                <th class="text-center">Số lượng</th>
+                                <th class="text-end">Thành tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.OrderDetails)
+                            {
+                                var img = item.Product?.ProductImages?.FirstOrDefault(x => x.IsDefault)?.ImageUrl
+                                ?? item.Product?.ProductImages?.FirstOrDefault()?.ImageUrl
+                                ?? "img/product-3.png";
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <img src="~/@img" class="rounded me-3 border" style="width: 50px; height: 50px; object-fit: contain;" />
+                                            <div>
+                                                <div class="fw-bold">@item.Product?.Name</div>
+                                                <small class="text-muted">SKU: @item.Product?.Sku</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">@item.UnitPrice.ToString("N0") đ</td>
+                                    <td class="text-center">x @item.Quantity</td>
+                                    <td class="text-end fw-bold">@((item.UnitPrice * item.Quantity).ToString("N0")) đ</td>
+                                </tr>
+                            }
+                            <tr class="border-top">
+                                <td colspan="3" class="text-end py-3 fw-bold">Tổng Cộng Đơn Hàng:</td>
+                                <td class="text-end py-3 fs-5 fw-bold text-danger">@Model.TotalAmount.ToString("N0") đ</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,34 @@
+﻿@model IEnumerable<WebBanPC.Models.Product>
+@{
+    ViewData["Title"] = "Sản Phẩm Yêu Thích";
+}
+
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="text-primary mb-0"><i class="fas fa-heart text-danger me-2"></i>Sản Phẩm Yêu Thích</h3>
+        <a asp-controller="Home" asp-action="Index" class="btn btn-outline-primary rounded-pill btn-sm px-3">
+            <i class="fas fa-shopping-bag me-1"></i> Khám phá thêm sản phẩm
+        </a>
+    </div>
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="card border-0 shadow-sm p-5 text-center">
+            <i class="far fa-heart fa-3x text-muted mb-3"></i>
+            <h5>Danh sách yêu thích đang trống!</h5>
+            <p class="text-muted">Nhấn vào biểu tượng trái tim ở bất kỳ linh kiện nào để lưu lại xem sau.</p>
+            <div>
+                <a asp-controller="Home" asp-action="Index" class="btn btn-primary rounded-pill px-4 py-2 fw-bold">Mua Sắm Ngay</a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var item in Model)
+            {
+                <partial name="_P_ProductItemPartial" model="item" />
+            }
+        </div>
+    }
+</div>

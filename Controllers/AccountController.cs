@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
@@ -12,7 +13,11 @@ namespace WebBanPC.Controllers
     {
         private readonly PcStoreDbContext _context;
         private const string GUEST_CART_COOKIE = "PcStore_GuestCart";
-
+        private int? GetCurrentUserId()
+        {
+            var idClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            return int.TryParse(idClaim, out int uid) ? uid : null;
+        }
         public AccountController(PcStoreDbContext context)
         {
             _context = context;
@@ -114,6 +119,8 @@ namespace WebBanPC.Controllers
             // GỘP GIỎ HÀNG TỪ COOKIE VÀO CSDL CHO TÀI KHOẢN VỪA ĐĂNG NHẬP
             await MigrateGuestCartToDbAsync(user.UserId);
 
+            await MigrateGuestWishlistToDbAsync(user.UserId);
+
             if (!string.IsNullOrEmpty(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
             {
                 return Redirect(model.ReturnUrl);
@@ -176,11 +183,180 @@ namespace WebBanPC.Controllers
                 }
             }
 
+
             // 4. Lưu vào SQL Server
             await _context.SaveChangesAsync();
 
             // 5. Xóa Cookie của khách vãng lai
             Response.Cookies.Delete(GUEST_CART_COOKIE);
+        }
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> Profile()
+        {
+            var userId = GetCurrentUserId();
+            if (userId == null) return Challenge();
+
+            var user = await _context.Users.FindAsync(userId.Value);
+            if (user == null) return NotFound();
+
+            var vm = new UserProfileVM
+            {
+                UserId = user.UserId,
+                FullName = user.FullName,
+                Email = user.Email,
+                PhoneNumber = user.PhoneNumber ?? string.Empty
+            };
+
+            return View(vm);
+        }
+
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Profile(UserProfileVM vm)
+        {
+            var userId = GetCurrentUserId();
+            if (userId == null) return Challenge();
+
+            var user = await _context.Users.FindAsync(userId.Value);
+            if (user == null) return NotFound();
+
+            // Giữ nguyên email không cho đổi
+            vm.Email = user.Email;
+
+            if (ModelState.IsValid)
+            {
+                // Kiểm tra nếu có yêu cầu đổi mật khẩu
+                if (!string.IsNullOrWhiteSpace(vm.NewPassword))
+                {
+                    if (string.IsNullOrWhiteSpace(vm.CurrentPassword) || !BCrypt.Net.BCrypt.Verify(vm.CurrentPassword, user.PasswordHash))
+                    {
+                        ModelState.AddModelError("CurrentPassword", "Mật khẩu hiện tại không chính xác.");
+                        return View(vm);
+                    }
+
+                    user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(vm.NewPassword);
+                }
+
+                user.FullName = vm.FullName.Trim();
+                user.PhoneNumber = vm.PhoneNumber.Trim();
+
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Cập nhật thông tin tài khoản thành công!";
+                return RedirectToAction(nameof(Profile));
+            }
+
+            return View(vm);
+        }
+
+        // ==========================================
+        // 2. ĐƠN HÀNG CỦA TÔI
+        // ==========================================
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> MyOrders()
+        {
+            var userId = GetCurrentUserId();
+            if (userId == null) return Challenge();
+
+            var orders = await _context.Orders
+                .Include(o => o.OrderDetails)
+                    .ThenInclude(od => od.Product)
+                        .ThenInclude(p => p.ProductImages)
+                .Where(o => o.UserId == userId.Value)
+                .OrderByDescending(o => o.OrderDate)
+                .ToListAsync();
+
+            return View(orders);
+        }
+
+        // ==========================================
+        // 3. CHI TIẾT ĐƠN HÀNG
+        // ==========================================
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> OrderDetails(int id)
+        {
+            var userId = GetCurrentUserId();
+            if (userId == null) return Challenge();
+
+            var order = await _context.Orders
+                .Include(o => o.OrderDetails)
+                    .ThenInclude(od => od.Product)
+                        .ThenInclude(p => p.ProductImages)
+                .FirstOrDefaultAsync(o => o.OrderId == id && o.UserId == userId.Value);
+
+            if (order == null) return NotFound();
+
+            return View(order);
+        }
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CancelOrder(int id)
+        {
+            var userId = GetCurrentUserId();
+            if (userId == null) return Challenge();
+
+            // Tìm đơn hàng của đúng User này
+            var order = await _context.Orders
+                .FirstOrDefaultAsync(o => o.OrderId == id && o.UserId == userId.Value);
+
+            if (order == null)
+            {
+                TempData["ErrorMessage"] = "Không tìm thấy đơn hàng cần hủy.";
+                return RedirectToAction(nameof(MyOrders));
+            }
+
+            // Chỉ cho phép hủy khi đơn còn ở trạng thái 1 (Chờ xác nhận)
+            if (order.OrderStatus != 1)
+            {
+                TempData["ErrorMessage"] = "Đơn hàng đang giao hoặc đã hoàn tất nên không thể hủy!";
+                return RedirectToAction(nameof(MyOrders));
+            }
+
+            // Đổi trạng thái sang 4 (Đã hủy)
+            order.OrderStatus = 4;
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = $"Đã hủy thành công đơn hàng #{order.OrderId}!";
+            return RedirectToAction(nameof(MyOrders));
+        }
+        private async Task MigrateGuestWishlistToDbAsync(int userId)
+        {
+            var cookieData = Request.Cookies["PcStore_GuestWishlist"];
+            if (string.IsNullOrEmpty(cookieData)) return;
+
+            List<int>? guestList = null;
+            try
+            {
+                guestList = JsonSerializer.Deserialize<List<int>>(cookieData);
+            }
+            catch { return; }
+
+            if (guestList == null || !guestList.Any()) return;
+
+            var userExistingIds = await _context.Wishlists
+                .Where(w => w.UserId == userId)
+                .Select(w => w.ProductId)
+                .ToListAsync();
+
+            foreach (var pid in guestList)
+            {
+                if (!userExistingIds.Contains(pid))
+                {
+                    _context.Wishlists.Add(new Wishlist
+                    {
+                        UserId = userId,
+                        ProductId = pid,
+                        CreatedAt = DateTime.Now
+                    });
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            Response.Cookies.Delete("PcStore_GuestWishlist");
         }
     }
 }

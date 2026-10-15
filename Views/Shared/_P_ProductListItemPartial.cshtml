@@ -81,9 +81,11 @@
             <i class="fas fa-shopping-cart me-1"></i>Thêm giỏ
         </button>
 
-        <div class="d-flex">
-            <a href="#" class="text-primary me-2"><i class="fas fa-random"></i></a>
-            <a href="#" class="text-primary"><i class="fas fa-heart"></i></a>
-        </div>
+        <button type="button"
+                class="border-0 bg-transparent text-primary d-flex align-items-center justify-content-center me-0 p-0 btn-toggle-wishlist"
+                data-product-id="@Model.ProductId"
+                title="Thêm vào yêu thích">
+            <span class="rounded-circle btn-sm-square border"><i class="fas fa-heart"></i></span>
+        </button>
     </div>
 </div>
