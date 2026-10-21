@@ -1,0 +1,28 @@
+﻿@model IEnumerable<WebBanPC.Models.CategoryMenuVM>
+
+<div class="nav-item dropdown">
+    <!-- Nút bấm All Categories -->
+    <a href="#" class="nav-link dropdown-toggle bg-primary text-white py-3 px-4 d-flex align-items-center justify-content-between" data-bs-toggle="collapse" data-bs-target="#navbarCategories" aria-expanded="false">
+        <h5 class="m-0 text-white"><i class="fa fa-bars me-2"></i>Tất Cả Danh Mục</h5>
+    </a>
+
+    <!-- Khung danh sách xổ xuống -->
+    <nav class="collapse position-absolute navbar navbar-vertical navbar-light align-items-start p-0 bg-white shadow-sm w-100" id="navbarCategories" style="z-index: 999;">
+        <div class="navbar-nav w-100 border border-top-0">
+            @if (Model != null && Model.Any())
+            {
+                @foreach (var cat in Model)
+                {
+                    <a asp-controller="Home" asp-action="Index" asp-route-categoryId="@cat.CategoryId" class="nav-item nav-link d-flex justify-content-between align-items-center px-4 py-2 text-dark border-bottom">
+                        <span><i class="fas fa-angle-right me-2 text-primary"></i>@cat.CategoryName</span>
+                        <span class="badge bg-light text-muted rounded-pill border">(@cat.ProductCount)</span>
+                    </a>
+                }
+            }
+            else
+            {
+                <span class="p-3 text-muted small text-center d-block">Chưa có danh mục nào</span>
+            }
+        </div>
+    </nav>
+</div>

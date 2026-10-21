@@ -1,0 +1,92 @@
+﻿@{
+    ViewData["Title"] = "Câu Hỏi Thường Gặp (FAQ) - TCSHOP";
+}
+
+<div class="container-fluid page-header py-5 bg-dark mb-4">
+    <h1 class="text-center text-white display-6">Câu Hỏi Thường Gặp</h1>
+    <ol class="breadcrumb justify-content-center mb-0">
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index" class="text-white">Trang Chủ</a></li>
+        <li class="breadcrumb-item text-white">Thông Tin Chung</li>
+        <li class="breadcrumb-item active text-primary fw-bold">FAQ</li>
+    </ol>
+</div>
+
+<div class="container py-4" style="max-width: 900px;">
+    <div class="text-center mb-5">
+        <h3 class="fw-bold text-primary">Giải Đáp Thắc Mắc Thường Gặp</h3>
+        <p class="text-muted">Tổng hợp các câu hỏi khách hàng thường quan tâm nhất khi mua sắm linh kiện tại TCSHOP</p>
+    </div>
+
+    <div class="accordion shadow-sm rounded-3 overflow-hidden" id="faqAccordion">
+        <!-- Câu 1 -->
+        <div class="accordion-item border-0 border-bottom">
+            <h2 class="accordion-header" id="headingOne">
+                <button class="accordion-button fw-bold text-dark py-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
+                    1. Tôi có được kiểm tra linh kiện trước khi thanh toán không?
+                </button>
+            </h2>
+            <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                <div class="accordion-body text-muted" style="line-height: 1.8;">
+                    <strong>Có.</strong> TCSHOP luôn hỗ trợ khách hàng đồng kiểm ngoại quan (kiểm tra tình trạng hộp, tem seal, số lượng) trước khi nhận hàng. Tuy nhiên, với linh kiện điện tử chưa lắp đặt, bạn không được tự ý xé seal niêm phong trước khi thanh toán tiền cho nhân viên giao vận.
+                </div>
+            </div>
+        </div>
+
+        <!-- Câu 2 -->
+        <div class="accordion-item border-0 border-bottom">
+            <h2 class="accordion-header" id="headingTwo">
+                <button class="accordion-button collapsed fw-bold text-dark py-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
+                    2. TCSHOP có hỗ trợ lắp ráp máy PC trọn bộ miễn phí không?
+                </button>
+            </h2>
+            <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                <div class="accordion-body text-muted" style="line-height: 1.8;">
+                    <strong>Hoàn toàn miễn phí.</strong> Khi bạn đặt mua các linh kiện thành một bộ case hoàn chỉnh tại TCSHOP, đội ngũ kỹ thuật viên sẽ hỗ trợ lắp ráp, đi dây gọn gàng, cập nhật Bios mới nhất và stress test hiệu năng ổn định trước khi đóng gói gửi đi.
+                </div>
+            </div>
+        </div>
+
+        <!-- Câu 3 -->
+        <div class="accordion-item border-0 border-bottom">
+            <h2 class="accordion-header" id="headingThree">
+                <button class="accordion-button collapsed fw-bold text-dark py-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree">
+                    3. Làm sao để sử dụng mã giảm giá (Voucher) khi đặt hàng?
+                </button>
+            </h2>
+            <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                <div class="accordion-body text-muted" style="line-height: 1.8;">
+                    Tại bước <strong>Thanh Toán (Checkout)</strong>, bạn nhìn sang cột tóm tắt đơn hàng bên phải sẽ thấy khung <em>Mã giảm giá / Voucher</em>. Bạn chỉ cần nhập đúng mã code và bấm nút <strong>Áp dụng</strong>, hệ thống sẽ tự động trừ trực tiếp số tiền ưu đãi vào tổng đơn hàng.
+                </div>
+            </div>
+        </div>
+
+        <!-- Câu 4 -->
+        <div class="accordion-item border-0 border-bottom">
+            <h2 class="accordion-header" id="headingFour">
+                <button class="accordion-button collapsed fw-bold text-dark py-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour">
+                    4. Sau khi đặt hàng thì bao lâu tôi sẽ nhận được hàng?
+                </button>
+            </h2>
+            <div id="collapseFour" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                <div class="accordion-body text-muted" style="line-height: 1.8;">
+                    - Khu vực nội thành TP.HCM: Nhận hàng trong vòng 2 - 4 giờ hoặc trong ngày.<br />
+                    - Khu vực các tỉnh thành khác: Thời gian chuyển phát an toàn từ 2 - 4 ngày làm việc thông qua đối tác bưu chính chuyên nghiệp.
+                </div>
+            </div>
+        </div>
+
+        <!-- Câu 5 -->
+        <div class="accordion-item border-0">
+            <h2 class="accordion-header" id="headingFive">
+                <button class="accordion-button collapsed fw-bold text-dark py-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive">
+                    5. Tôi cần bảo hành sản phẩm thì làm như thế nào?
+                </button>
+            </h2>
+            <div id="collapseFive" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                <div class="accordion-body text-muted" style="line-height: 1.8;">
+                    Bạn chỉ cần mang sản phẩm hoặc gửi chuyển phát kèm mã hóa đơn điện tử về trung tâm bảo hành của TCSHOP. Kỹ thuật viên sẽ kiểm tra số serial và tiến hành xử lý bảo hành hoặc đổi mới ngay theo quy định.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

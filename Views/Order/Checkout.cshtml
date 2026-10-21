@@ -18,10 +18,15 @@
     <div class="container py-3">
         <h2 class="mb-4 text-primary"><i class="fas fa-file-invoice-dollar me-2"></i>Thông tin đặt hàng</h2>
 
-        <form asp-action="Checkout" method="post">
+        <form asp-action="Checkout" method="post" id="checkoutForm">
             @Html.AntiForgeryToken()
+
+            <!-- Các input ẩn để gửi mã giảm giá lên Controller xử lý lưu Database -->
+            <input type="hidden" name="VoucherCode" id="hiddenVoucherCode" value="" />
+            <input type="hidden" name="DiscountAmount" id="hiddenDiscountAmount" value="0" />
+
             <div class="row g-5">
-                <!-- Cột trái: Form thông tin giao hàng -->
+                <!-- =================== CỘT TRÁI: ĐỊA CHỈ NHẬN HÀNG =================== -->
                 <div class="col-md-12 col-lg-6">
                     <div class="card border-0 shadow-sm p-4">
                         <h4 class="mb-3">Địa chỉ nhận hàng</h4>
@@ -59,7 +64,7 @@
                     </div>
                 </div>
 
-                <!-- Cột phải: Bảng tóm tắt giỏ hàng & nút chuyển qua QR -->
+                <!-- =================== CỘT PHẢI: CHI TIẾT ĐƠN HÀNG & VOUCHER =================== -->
                 <div class="col-md-12 col-lg-6">
                     <div class="card border-0 shadow-sm p-4">
                         <h4 class="mb-3">Đơn hàng của bạn</h4>
@@ -73,35 +78,62 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach (var item in Model.CartItems)
+                                    @if (Model.CartItems != null && Model.CartItems.Any())
                                     {
-                                        <tr>
-                                            <td class="py-3">
-                                                <div class="fw-bold">@item.Name</div>
-                                                <small class="text-muted">Đơn giá: @item.Price.ToString("N0") đ</small>
-                                            </td>
-                                            <td class="text-center py-3">x @item.Quantity</td>
-                                            <td class="text-end py-3 fw-bold">@item.Total.ToString("N0") đ</td>
-                                        </tr>
+                                        @foreach (var item in Model.CartItems)
+                                        {
+                                            <tr>
+                                                <td class="py-3">
+                                                    <div class="fw-bold">@item.Name</div>
+                                                    <small class="text-muted">Đơn giá: @item.Price.ToString("N0") đ</small>
+                                                </td>
+                                                <td class="text-center py-3">x @item.Quantity</td>
+                                                <td class="text-end py-3 fw-bold">@item.Total.ToString("N0") đ</td>
+                                            </tr>
+                                        }
                                     }
-                                    <tr class="border-top">
-                                        <td colspan="2" class="py-2 text-muted">Tạm tính:</td>
-                                        <td class="text-end py-2 fw-bold">@Model.Subtotal.ToString("N0") đ</td>
-                                    </tr>
-                                    <tr>
-                                        <td colspan="2" class="py-2 text-muted">Phí vận chuyển:</td>
-                                        <td class="text-end py-2">@Model.ShippingFee.ToString("N0") đ</td>
-                                    </tr>
-                                    <tr class="border-top border-bottom">
-                                        <td colspan="2" class="py-3"><h5 class="mb-0">Tổng thanh toán:</h5></td>
-                                        <td class="text-end py-3"><h4 class="text-danger fw-bold mb-0">@Model.TotalAmount.ToString("N0") đ</h4></td>
-                                    </tr>
                                 </tbody>
                             </table>
                         </div>
 
-                        <!-- Phần phương thức thanh toán: Chỉ giữ QR Code -->
-                        <div class="alert alert-info border-0 rounded mt-3 d-flex align-items-center">
+                        <!-- KHỐI NHẬP MÃ GIẢM GIÁ (Đặt gọn gàng bên trong card) -->
+                        <div class="my-3 p-3 bg-light rounded border">
+                            <label class="form-label fw-bold text-dark small mb-2">
+                                <i class="fas fa-tag text-warning me-1"></i> Mã giảm giá / Voucher
+                            </label>
+                            <div class="input-group">
+                                <input type="text" id="voucherInput" class="form-control text-uppercase font-monospace" placeholder="Nhập mã voucher (nếu có)">
+                                <button class="btn btn-outline-primary px-3 fw-bold" type="button" id="btnApplyVoucher">Áp dụng</button>
+                            </div>
+                            <div id="voucherAlert" class="small mt-2" style="display:none;"></div>
+                        </div>
+
+                        <!-- CỤM TỔNG TIỀN ĐỒNG BỘ ĐỘNG THEO MODEL -->
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Tạm tính:</span>
+                            <span class="fw-bold" id="checkoutSubtotal">@Model.Subtotal.ToString("N0") đ</span>
+                        </div>
+
+                        <!-- Dòng Giảm giá từ Voucher (Mặc định ẩn, hiện khi mã hợp lệ) -->
+                        <div class="d-flex justify-content-between mb-2 text-success" id="discountRow" style="display: none !important;">
+                            <span>Voucher giảm giá (<strong id="appliedCodeText"></strong>):</span>
+                            <span class="fw-bold" id="discountValue">-0 đ</span>
+                        </div>
+
+                        <div class="d-flex justify-content-between mb-3">
+                            <span class="text-muted">Phí vận chuyển:</span>
+                            <span class="fw-bold" id="shippingFee">@Model.ShippingFee.ToString("N0") đ</span>
+                        </div>
+
+                        <hr>
+
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <span class="fs-5 fw-bold text-dark">Tổng thanh toán:</span>
+                            <span class="fs-4 fw-bold text-danger" id="checkoutGrandTotal">@Model.TotalAmount.ToString("N0") đ</span>
+                        </div>
+
+                        <!-- Phương thức thanh toán QR Code -->
+                        <div class="alert alert-info border-0 rounded d-flex align-items-center mb-3">
                             <i class="fas fa-qrcode fa-2x me-3 text-primary"></i>
                             <div>
                                 <h6 class="mb-1 text-primary fw-bold">Thanh toán chuyển khoản qua mã QR Ngân Hàng</h6>
@@ -109,7 +141,8 @@
                             </div>
                         </div>
 
-                        <div class="pt-3">
+                        <!-- Nút Submit Đặt hàng -->
+                        <div>
                             <button type="submit" class="btn btn-primary rounded-pill py-3 px-4 text-uppercase w-100 fw-bold fs-5 shadow">
                                 <i class="fas fa-check-circle me-2"></i>Đặt hàng & Lấy mã QR
                             </button>
@@ -121,3 +154,61 @@
     </div>
 </div>
 <!-- Checkout Page End -->
+@section Scripts {
+    <script>
+        // Lấy dữ liệu động từ Razor Model (Không bao giờ bị cứng số tiền)
+        let rawSubtotal = @Model.Subtotal;
+        let rawShipping = @Model.ShippingFee;
+        let currentDiscount = 0;
+
+        $('#btnApplyVoucher').click(function () {
+            let code = $('#voucherInput').val().trim();
+            let alertBox = $('#voucherAlert');
+
+            if (!code) {
+                alertBox.removeClass('text-success').addClass('text-danger').text('Vui lòng nhập mã voucher!').show();
+                return;
+            }
+
+            $.ajax({
+                url: '/Order/ApplyVoucher',
+                type: 'POST',
+                data: { code: code, subtotal: rawSubtotal },
+                success: function (res) {
+                    if (res.success) {
+                        currentDiscount = res.discount;
+
+                        // Hiển thị thông báo thành công
+                        alertBox.removeClass('text-danger').addClass('text-success').text(res.message).show();
+
+                        // Hiển thị dòng giảm giá
+                        $('#discountRow').attr('style', 'display: flex !important;');
+                        $('#appliedCodeText').text(res.voucherCode);
+                        $('#discountValue').text('-' + currentDiscount.toLocaleString('vi-VN') + ' đ');
+
+                        // Gán vào input hidden để gửi form lên Controller
+                        $('#hiddenVoucherCode').val(res.voucherCode);
+                        $('#hiddenDiscountAmount').val(currentDiscount);
+
+                        // Tính lại tổng thanh toán mới
+                        let newTotal = rawSubtotal + rawShipping - currentDiscount;
+                        $('#checkoutGrandTotal').text(newTotal.toLocaleString('vi-VN') + ' đ');
+                    } else {
+                        // Reset lại nếu nhập mã sai/hết hạn
+                        currentDiscount = 0;
+                        $('#discountRow').attr('style', 'display: none !important;');
+                        $('#hiddenVoucherCode').val('');
+                        $('#hiddenDiscountAmount').val(0);
+
+                        let originalTotal = rawSubtotal + rawShipping;
+                        $('#checkoutGrandTotal').text(originalTotal.toLocaleString('vi-VN') + ' đ');
+                        alertBox.removeClass('text-success').addClass('text-danger').text(res.message).show();
+                    }
+                },
+                error: function () {
+                    alertBox.removeClass('text-success').addClass('text-danger').text('Lỗi kết nối máy chủ!').show();
+                }
+            });
+        });
+    </script>
+}

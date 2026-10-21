@@ -179,5 +179,50 @@ namespace WebBanPC.Controllers
 
             return View(order);
         }
+        // POST: /Order/ApplyVoucher
+        [HttpPost]
+        public async Task<IActionResult> ApplyVoucher(string code, decimal subtotal)
+        {
+            if (string.IsNullOrWhiteSpace(code))
+            {
+                return Json(new { success = false, message = "Vui lòng nhập mã giảm giá!" });
+            }
+
+            code = code.Trim().ToUpper();
+            var now = DateTime.Now;
+
+            var voucher = await _context.Vouchers
+                .FirstOrDefaultAsync(v => v.Code == code && v.IsActive && v.StartDate <= now && v.EndDate >= now);
+
+            if (voucher == null)
+            {
+                return Json(new { success = false, message = "Mã voucher không hợp lệ hoặc đã hết hạn!" });
+            }
+
+            if (voucher.Quantity <= 0)
+            {
+                return Json(new { success = false, message = "Mã voucher này đã hết lượt sử dụng!" });
+            }
+
+            if (subtotal < voucher.MinOrderAmount)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = $"Đơn hàng phải từ {voucher.MinOrderAmount:N0} đ trở lên mới áp dụng được mã này!"
+                });
+            }
+
+            // Tính số tiền giảm (không giảm quá tổng giá trị đơn)
+            decimal discount = Math.Min(voucher.DiscountAmount, subtotal);
+
+            return Json(new
+            {
+                success = true,
+                message = $"Áp dụng mã {voucher.Code} thành công! Giảm {discount:N0} đ",
+                discount = discount,
+                voucherCode = voucher.Code
+            });
+        }
     }
 }

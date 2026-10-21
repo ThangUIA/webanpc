@@ -1,0 +1,98 @@
+﻿@model IEnumerable<WebBanPC.Models.Voucher>
+@{
+    ViewData["Title"] = "Mã Giảm Giá & Phiếu Quà Tặng - TCSHOP";
+}
+
+<!-- Page Header Breadcrumb -->
+<div class="container-fluid page-header py-5 bg-dark mb-4">
+    <h1 class="text-center text-white display-6">Phiếu Quà Tặng & Voucher</h1>
+    <ol class="breadcrumb justify-content-center mb-0">
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index" class="text-white">Trang Chủ</a></li>
+        <li class="breadcrumb-item text-white">Khuyến Mãi</li>
+        <li class="breadcrumb-item active text-primary fw-bold">Mã Giảm Giá</li>
+    </ol>
+</div>
+
+<div class="container py-4">
+    <div class="text-center mx-auto mb-5" style="max-width: 700px;">
+        <h4 class="text-primary border-bottom border-primary border-2 d-inline-block pb-2">ƯU ĐÃI ĐẶC QUYỀN</h4>
+        <h2 class="display-6 fw-bold">Kho Mã Giảm Giá TCSHOP</h2>
+        <p class="text-muted">Lưu ngay các mã voucher giảm giá cực sốc để áp dụng trực tiếp tại bước thanh toán đơn hàng linh kiện.</p>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="row g-4">
+            @foreach (var item in Model)
+            {
+                <div class="col-md-6 col-lg-4">
+                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 position-relative" style="background: #fff; border: 1px dashed #fd7e14 !important;">
+                        <div class="card-body p-4 d-flex flex-column justify-content-between">
+                            <div>
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <span class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-bold">
+                                        <i class="fas fa-gift me-1"></i> GIẢM @item.DiscountAmount.ToString("N0") đ
+                                    </span>
+                                    <small class="text-muted">Còn @item.Quantity lượt</small>
+                                </div>
+
+                                <h5 class="fw-bold text-dark mt-2 mb-2">@item.Title</h5>
+
+                                <p class="text-muted small mb-3">
+                                    <i class="fas fa-info-circle text-primary me-1"></i>
+                                    Đơn tối thiểu: <strong>@item.MinOrderAmount.ToString("N0") đ</strong>
+                                </p>
+                            </div>
+
+                            <div class="border-top pt-3">
+                                <small class="text-muted d-block mb-2">
+                                    <i class="fas fa-clock text-secondary me-1"></i>Hạn dùng: @item.EndDate.ToString("dd/MM/yyyy")
+                                </small>
+
+                                <div class="input-group">
+                                    <input type="text" class="form-control text-center text-uppercase fw-bold font-monospace bg-light"
+                                           value="@item.Code" readonly id="code-@item.Id" style="letter-spacing: 1.5px; color: #fd7e14;" />
+                                    <button class="btn btn-primary px-3 fw-bold btn-copy-code" type="button" data-target="code-@item.Id">
+                                        <i class="fas fa-copy me-1"></i> Sao chép
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="card border-0 shadow-sm p-5 text-center my-4">
+            <i class="fas fa-ticket-alt fa-3x text-muted mb-3 d-block"></i>
+            <h5>Hiện chưa có mã giảm giá mới!</h5>
+            <p class="text-muted">Các chương trình ưu đãi và quà tặng sẽ được cập nhật liên tục. Bạn hãy quay lại sau nhé.</p>
+            <div>
+                <a asp-controller="Shop" asp-action="Index" class="btn btn-primary rounded-pill px-4 py-2 fw-bold">Khám Phá Sản Phẩm Ngay</a>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        $('.btn-copy-code').click(function () {
+            let targetId = $(this).data('target');
+            let input = document.getElementById(targetId);
+
+            input.select();
+            input.setSelectionRange(0, 99999); // Hỗ trợ điện thoại
+            navigator.clipboard.writeText(input.value);
+
+            let btn = $(this);
+            let originalHtml = btn.html();
+            btn.removeClass('btn-primary').addClass('btn-success').html('<i class="fas fa-check me-1"></i> Đã chép');
+
+            setTimeout(function () {
+                btn.removeClass('btn-success').addClass('btn-primary').html(originalHtml);
+            }, 2000);
+        });
+    </script>
+}

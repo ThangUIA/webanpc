@@ -1,0 +1,85 @@
+﻿@{
+    ViewData["Title"] = "Chính Sách Bảo Hành - TCSHOP";
+}
+
+<div class="container-fluid page-header py-5 bg-dark mb-4">
+    <h1 class="text-center text-white display-6">Chính Sách Bảo Hành</h1>
+    <ol class="breadcrumb justify-content-center mb-0">
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index" class="text-white">Trang Chủ</a></li>
+        <li class="breadcrumb-item text-white">Thông Tin Chung</li>
+        <li class="breadcrumb-item active text-primary fw-bold">Chính Sách Bảo Hành</li>
+    </ol>
+</div>
+
+<div class="container py-4">
+    <div class="card border-0 shadow-sm p-4 p-md-5 bg-white rounded-3">
+        <h4 class="text-primary fw-bold mb-3 border-bottom pb-2">
+            <i class="fas fa-shield-alt me-2"></i>Quy Định & Cam Kết Bảo Hành Linh Kiện Tại TCSHOP
+        </h4>
+        <p class="text-muted">
+            Tất cả linh kiện máy tính bán ra tại <strong>TCSHOP</strong> đều là hàng phân phối chính hãng 100%, có tem niêm phong và được áp dụng chế độ bảo hành theo đúng tiêu chuẩn của hãng sản xuất.
+        </p>
+
+        <h5 class="fw-bold mt-4 mb-3 text-dark">1. Thời Gian Bảo Hành Từng Danh Mục</h5>
+        <div class="table-responsive mb-4">
+            <table class="table table-bordered align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Nhóm Linh Kiện</th>
+                        <th>Thời Hạn Bảo Hành</th>
+                        <th>Chính Sách Đổi Mới</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>CPU (Bộ vi xử lý)</strong></td>
+                        <td>36 tháng</td>
+                        <td>1 đổi 1 trong 30 ngày nếu lỗi do NSX</td>
+                    </tr>
+                    <tr>
+                        <td><strong>VGA (Card đồ họa)</strong></td>
+                        <td>36 tháng</td>
+                        <td>1 đổi 1 trong 30 ngày nếu lỗi do NSX</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Mainboard (Bo mạch chủ)</strong></td>
+                        <td>36 tháng</td>
+                        <td>1 đổi 1 trong 30 ngày (không cong chân socket)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>RAM & Ổ cứng SSD/HDD</strong></td>
+                        <td>36 - 60 tháng</td>
+                        <td>1 đổi 1 ngay lập tức khi phát hiện lỗi</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Nguồn (PSU), Vỏ case, Tản nhiệt</strong></td>
+                        <td>12 - 36 tháng</td>
+                        <td>Hỗ trợ sửa chữa hoặc đổi trả theo quy chuẩn hãng</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h5 class="fw-bold mt-3 mb-2 text-dark">2. Điều Kiện Được Bảo Hành Hợp Lệ</h5>
+        <ul class="text-muted ps-3 mb-4" style="line-height: 1.8;">
+            <li>Sản phẩm còn trong thời hạn bảo hành căn cứ theo Serial Number hoặc hóa đơn điện tử tại TCSHOP.</li>
+            <li>Tem bảo hành của nhà phân phối và TCSHOP dán trên linh kiện phải còn nguyên vẹn, không có dấu hiệu bị rách, tẩy xóa hoặc cạo sửa.</li>
+            <li>Linh kiện không bị biến dạng vật lý, không nứt mẻ, không cháy nổ IC do cắm sai nguồn điện.</li>
+        </ul>
+
+        <h5 class="fw-bold mt-3 mb-2 text-dark">3. Các Trường Hợp Từ Chối Tiếp Nhận Bảo Hành</h5>
+        <ul class="text-muted ps-3 mb-4" style="line-height: 1.8;">
+            <li>Sản phẩm có dấu hiệu rỉ sét, ẩm ướt, dính chất lỏng hoặc có côn trùng xâm nhập.</li>
+            <li>Linh kiện bị cong gãy chân cắm (đặc biệt là chân socket CPU trên bo mạch chủ do lắp đặt sai kỹ thuật).</li>
+            <li>Sản phẩm đã bị can thiệp mod bios, tự ý tháo mở sửa chữa bên ngoài trước khi gửi về trung tâm.</li>
+        </ul>
+
+        <div class="alert alert-info border-0 rounded p-3 d-flex align-items-center">
+            <i class="fas fa-headset fa-2x text-primary me-3"></i>
+            <div>
+                <strong>Địa chỉ tiếp nhận bảo hành:</strong> 123 Đường Công Nghệ, TP. Hồ Chí Minh<br />
+                <small class="text-muted">Thời gian làm việc phòng bảo hành: 09:00 - 18:00 (Từ Thứ 2 đến Thứ 7).</small>
+            </div>
+        </div>
+    </div>
+</div>

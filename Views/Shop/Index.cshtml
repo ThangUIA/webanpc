@@ -1,0 +1,84 @@
+﻿@model IEnumerable<WebBanPC.Models.Product>
+@{
+    ViewData["Title"] = "Cửa Hàng - Linh Kiện PC";
+    int currentPage = ViewBag.CurrentPage ?? 1;
+    int totalPages = ViewBag.TotalPages ?? 1;
+    int? currentCat = ViewBag.CurrentCategory;
+    string? currentSearch = ViewBag.CurrentSearch;
+}
+
+<!-- Header Điều Hướng -->
+<div class="container-fluid page-header py-5">
+    <h1 class="text-center text-white display-6">Cửa Hàng Linh Kiện</h1>
+    <ol class="breadcrumb justify-content-center mb-0">
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Trang Chủ</a></li>
+        <li class="breadcrumb-item active text-white">Cửa Hàng</li>
+    </ol>
+</div>
+
+<div class="container py-5">
+    <!-- Thanh Tìm kiếm & Lọc nhanh -->
+    <div class="card border-0 shadow-sm p-3 mb-4 rounded-3">
+        <form method="get" asp-action="Index" class="row g-2 align-items-center">
+            <input type="hidden" name="categoryId" value="@currentCat" />
+            <div class="col-md-9">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+                    <input type="text" name="search" class="form-control border-start-0" placeholder="Tìm tên linh kiện, CPU, VGA, RAM..." value="@currentSearch" />
+                </div>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold flex-grow-1">
+                    Tìm kiếm
+                </button>
+                @if (!string.IsNullOrWhiteSpace(currentSearch) || currentCat.HasValue)
+                {
+                    <a asp-action="Index" class="btn btn-light rounded-pill border px-3" title="Xóa bộ lọc">
+                        <i class="fas fa-redo-alt"></i>
+                    </a>
+                }
+            </div>
+        </form>
+    </div>
+
+    <!-- Danh sách sản phẩm -->
+    <div class="row g-4">
+        @if (Model != null && Model.Any())
+        {
+            @foreach (var item in Model)
+            {
+                <div class="col-md-6 col-lg-4">
+                    <partial name="_P_ProductItemPartial" model="item" />
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12 text-center py-5">
+                <i class="fas fa-box-open fa-3x text-muted mb-3 d-block"></i>
+                <h5 class="text-muted">Không tìm thấy sản phẩm nào phù hợp!</h5>
+            </div>
+        }
+    </div>
+
+    <!-- Phân trang -->
+    @if (totalPages > 1)
+    {
+        <div class="d-flex justify-content-center mt-5">
+            <ul class="pagination">
+                <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                    <a class="page-link rounded-pill me-1" asp-action="Index" asp-route-page="@(currentPage - 1)" asp-route-categoryId="@currentCat" asp-route-search="@currentSearch">«</a>
+                </li>
+                @for (int i = 1; i <= totalPages; i++)
+                {
+                    <li class="page-item @(i == currentPage ? "active" : "")">
+                        <a class="page-link rounded-pill mx-1" asp-action="Index" asp-route-page="@i" asp-route-categoryId="@currentCat" asp-route-search="@currentSearch">@i</a>
+                    </li>
+                }
+                <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                    <a class="page-link rounded-pill ms-1" asp-action="Index" asp-route-page="@(currentPage + 1)" asp-route-categoryId="@currentCat" asp-route-search="@currentSearch">»</a>
+                </li>
+            </ul>
+        </div>
+    }
+</div>

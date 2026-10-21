@@ -1,0 +1,80 @@
+﻿@{
+    ViewData["Title"] = "Chính Sách & Thông Tin Giao Hàng";
+}
+
+<!-- Breadcrumb Header -->
+<div class="container-fluid page-header py-5 bg-dark mb-4">
+    <h1 class="text-center text-white display-6">Thông Tin Giao Hàng</h1>
+    <ol class="breadcrumb justify-content-center mb-0">
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index" class="text-white">Trang Chủ</a></li>
+        <li class="breadcrumb-item text-white">Thông Tin Chung</li>
+        <li class="breadcrumb-item active text-primary fw-bold">Giao Hàng</li>
+    </ol>
+</div>
+
+<div class="container py-4">
+    <div class="row g-4">
+        <!-- Bảng thời gian và phí vận chuyển -->
+        <div class="col-12 mb-4">
+            <div class="card border-0 shadow-sm p-4">
+                <h4 class="fw-bold text-primary mb-3"><i class="fas fa-shipping-fast me-2"></i>1. Biểu Phí & Thời Gian Vận Chuyển</h4>
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Khu Vực Giao Hàng</th>
+                                <th>Thời Gian Dự Kiến</th>
+                                <th>Phí Giao Hàng</th>
+                                <th>Ghi Chú</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Nội thành TP. Hồ Chí Minh</strong></td>
+                                <td>Trong vòng 2 - 4 giờ (Giao nhanh) hoặc trong ngày</td>
+                                <td class="text-success fw-bold">Miễn phí (Đơn từ 2.000.000 đ)</td>
+                                <td>Áp dụng cho đơn linh kiện nhỏ gọn</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Ngoại thành TP. Hồ Chí Minh</strong></td>
+                                <td>1 - 2 ngày làm việc</td>
+                                <td>30.000 đ</td>
+                                <td>Đồng kiểm tra hàng trước khi nhận</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Các Tỉnh / Thành Phố Khác</strong></td>
+                                <td>2 - 4 ngày làm việc</td>
+                                <td>30.000 đ - 50.000 đ (Tùy cân nặng)</td>
+                                <td>Được đóng gói chèn xốp chống sốc đa lớp</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quy trình kiểm tra nhận hàng -->
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm p-4 h-100">
+                <h5 class="fw-bold text-dark mb-3"><i class="fas fa-box-open text-warning me-2"></i>2. Quy Định Đồng Kiểm Hàng</h5>
+                <ul class="text-muted ps-3 mb-0" style="line-height: 1.9;">
+                    <li>Khách hàng được quyền <strong>mở kiện hàng bên ngoài</strong> để kiểm tra tình trạng nguyên vẹn của hộp sản phẩm và số lượng theo hóa đơn.</li>
+                    <li>Sản phẩm linh kiện điện tử (CPU, VGA, Mainboard) phải còn <strong>nguyên tem niêm phong (seal)</strong> của nhà sản xuất. Không được cắt seal khi chưa thanh toán.</li>
+                    <li>Nếu thấy hộp bị rách, móp méo nghiêm trọng do vận chuyển, vui lòng <strong>từ chối nhận</strong> và gọi ngay cho hotline để được hỗ trợ gửi kiện mới.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Đóng gói linh kiện cao cấp -->
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm p-4 h-100">
+                <h5 class="fw-bold text-dark mb-3"><i class="fas fa-shield-alt text-success me-2"></i>3. Tiêu Chuẩn Đóng Gói An Toàn</h5>
+                <ul class="text-muted ps-3 mb-0" style="line-height: 1.9;">
+                    <li>Mọi linh kiện PC đều được quấn từ <strong>3 - 5 lớp xốp bóng khí (bubble wrap)</strong> chống va đập.</li>
+                    <li>Các case máy tính hoặc dàn PC nguyên bộ (PC Build sẵn) đều được chèn mút định hình bên trong thùng máy và dán tem cảnh báo <strong>Hàng Dễ Vỡ</strong> bên ngoài.</li>
+                    <li>Mọi kiện hàng đều có mã vận đơn theo dõi trực tiếp từ các đơn vị vận chuyển (Viettel Post, GHTK, GHN).</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

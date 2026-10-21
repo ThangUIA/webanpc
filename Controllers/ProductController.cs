@@ -14,19 +14,13 @@ namespace WebBanPC.Controllers
         }
 
         // GET: /Product/Details/5
-        public async Task<IActionResult> Details(int? id)
+        [HttpGet]
+        public async Task<IActionResult> Details(int id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
             var product = await _context.Products
+                .AsNoTracking()
                 .Include(p => p.Category)
-                .Include(p => p.Brand)
                 .Include(p => p.ProductImages)
-                .Include(p => p.ProductAttributes)
-                    .ThenInclude(pa => pa.Attribute) // Nạp thông số kỹ thuật (Socket, RAM, VRAM...)
                 .FirstOrDefaultAsync(p => p.ProductId == id);
 
             if (product == null)
@@ -34,15 +28,22 @@ namespace WebBanPC.Controllers
                 return NotFound();
             }
 
-            // Lấy 4 sản phẩm cùng CategoryId làm Related Products (trừ sản phẩm hiện tại)
-            ViewBag.RelatedProducts = await _context.Products
-                .Include(p => p.Category)
+            // Lấy 4 sản phẩm cùng danh mục để hiển thị ở mục Sản phẩm liên quan
+            var relatedProducts = await _context.Products
+                .AsNoTracking()
+                .Where(p => p.CategoryId == product.CategoryId && p.ProductId != product.ProductId)
                 .Include(p => p.ProductImages)
-                .Where(p => p.CategoryId == product.CategoryId && p.ProductId != id)
+                .Include(p => p.Category)
                 .Take(4)
                 .ToListAsync();
 
-            return View(product);
+            var vm = new ProductDetailVM
+            {
+                Product = product,
+                RelatedProducts = relatedProducts
+            };
+
+            return View(vm);
         }
     }
 }

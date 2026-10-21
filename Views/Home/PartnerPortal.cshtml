@@ -1,0 +1,76 @@
+﻿@{
+    ViewData["Title"] = "Cổng Đối Tác & Đại Lý - TCSHOP";
+}
+
+<div class="container-fluid page-header py-5 bg-dark mb-4">
+    <h1 class="text-center text-white display-6">Cổng Hợp Tác & Đại Lý</h1>
+    <ol class="breadcrumb justify-content-center mb-0">
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index" class="text-white">Trang Chủ</a></li>
+        <li class="breadcrumb-item text-white">Thông Tin Chung</li>
+        <li class="breadcrumb-item active text-primary fw-bold">Đối Tác / Đại Lý</li>
+    </ol>
+</div>
+
+<div class="container py-4">
+    <div class="row g-5 align-items-center mb-5">
+        <div class="col-lg-6">
+            <span class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-bold mb-3">Chính Sách B2B & Đại Lý</span>
+            <h2 class="fw-bold mb-3">Hợp Tác Cùng TCSHOP Phát Triển Thị Trường Phần Cứng</h2>
+            <p class="text-muted" style="line-height: 1.8;">
+                TCSHOP luôn tìm kiếm các đối tác doanh nghiệp, phòng nét (iCafe), cửa hàng máy tính địa phương và các đơn vị thi công giải pháp công nghệ trên toàn quốc để cùng xây dựng chuỗi phân phối linh kiện PC vững mạnh.
+            </p>
+            <div class="row g-3">
+                <div class="col-sm-6">
+                    <div class="p-3 border rounded bg-light">
+                        <i class="fas fa-percentage text-danger fa-2x mb-2"></i>
+                        <h6 class="fw-bold mb-1">Chiết Khấu Hấp Dẫn</h6>
+                        <small class="text-muted">Mức giá đại lý độc quyền</small>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="p-3 border rounded bg-light">
+                        <i class="fas fa-warehouse text-primary fa-2x mb-2"></i>
+                        <h6 class="fw-bold mb-1">Nguồn Hàng Ổn Định</h6>
+                        <small class="text-muted">Kho linh kiện sẵn hàng số lượng lớn</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <!-- Form gửi thông tin đăng ký đối tác -->
+            <div class="card border-0 shadow rounded-3 p-4 bg-white">
+                <h4 class="fw-bold text-primary mb-3">Đăng Ký Làm Đại Lý / B2B</h4>
+                <form asp-controller="Home" asp-action="Contact" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="subject" value="Đăng ký làm Đại Lý / Khách Hàng B2B" />
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Tên Đơn Vị / Công Ty *</label>
+                        <input type="text" name="name" class="form-control py-2" placeholder="Tên cửa hàng, phòng Net hoặc công ty" required />
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold small">Số Điện Thoại / Zalo *</label>
+                            <input type="tel" name="phone" class="form-control py-2" placeholder="0987654321" required />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold small">Email Liên Hệ *</label>
+                            <input type="email" name="email" class="form-control py-2" placeholder="partner@gmail.com" required />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Nhu Cầu Hợp Tác *</label>
+                        <textarea name="message" class="form-control" rows="3" placeholder="Nhập quy mô, nhóm linh kiện bạn đang cần lấy sỉ..." required></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary rounded-pill w-100 py-3 fw-bold">
+                        <i class="fas fa-handshake me-1"></i> Gửi Yêu Cầu Hợp Tác
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

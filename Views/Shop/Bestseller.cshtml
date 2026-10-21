@@ -1,0 +1,136 @@
+﻿@model IEnumerable<WebBanPC.Models.Product>
+@{
+    ViewData["Title"] = "Sản Phẩm Bán Chạy Nhất";
+    int currentPage = ViewBag.CurrentPage ?? 1;
+    int totalPages = ViewBag.TotalPages ?? 1;
+}
+
+<!-- Header Điều hướng Breadcrumb -->
+<div class="container-fluid page-header py-4 mb-4">
+    <h2 class="text-center text-white fw-bold">Sản Phẩm Bán Chạy</h2>
+    <ol class="breadcrumb justify-content-center mb-0">
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index" class="text-white">Trang Chủ</a></li>
+        <li class="breadcrumb-item"><a asp-controller="Shop" asp-action="Index" class="text-white">Cửa Hàng</a></li>
+        <li class="breadcrumb-item active text-primary fw-bold">Bán Chạy</li>
+    </ol>
+</div>
+
+<!-- Lưới hiển thị Sản Phẩm Bán Chạy -->
+<div class="container py-4">
+    <div class="row g-4">
+        @if (Model != null && Model.Any())
+        {
+            @foreach (var item in Model)
+            {
+                var mainImg = item.ProductImages?.FirstOrDefault(x => x.IsDefault)?.ImageUrl
+                ?? item.ProductImages?.FirstOrDefault()?.ImageUrl
+                ?? "img/product-3.png";
+
+                <div class="col-sm-6 col-md-4 col-lg-3">
+                    <div class="card h-100 border rounded shadow-sm position-relative overflow-hidden">
+                        <!-- Nhãn Bestseller -->
+                        <span class="badge bg-danger position-absolute top-0 end-0 m-2 rounded-pill px-3 py-1 fw-bold" style="z-index: 2;">
+                            Bestseller
+                        </span>
+
+                        <!-- Khối ảnh sản phẩm -->
+                        <div class="text-center p-3 bg-light" style="height: 200px;">
+                            <a asp-controller="Product" asp-action="Details" asp-route-id="@item.ProductId">
+                                <img src="~/@mainImg" class="img-fluid h-100" style="object-fit: contain;" alt="@item.Name" onerror="this.onerror=null;this.src='/img/product-3.png';" />
+                            </a>
+                        </div>
+
+                        <!-- Thông tin sản phẩm -->
+                        <div class="card-body text-center d-flex flex-column justify-content-between p-3">
+                            <div>
+                                <small class="text-muted d-block mb-1">@(item.Category?.CategoryName ?? "Linh kiện PC")</small>
+                                <h6 class="fw-bold mb-2 text-truncate" title="@item.Name">
+                                    <a asp-controller="Product" asp-action="Details" asp-route-id="@item.ProductId" class="text-dark text-decoration-none">
+                                        @item.Name
+                                    </a>
+                                </h6>
+                                <div class="mb-3">
+                                    <span class="text-danger fw-bold fs-5">@item.Price.ToString("N0") đ</span>
+                                </div>
+                            </div>
+
+                            <!-- Nút thao tác -->
+                            <div>
+                                <button type="button" class="btn btn-primary rounded-pill btn-sm px-4 py-2 fw-bold btn-add-to-cart mb-2 w-100" data-product-id="@item.ProductId">
+                                    <i class="fas fa-shopping-bag me-1"></i> Thêm vào giỏ
+                                </button>
+                                <div class="d-flex justify-content-center gap-2 pt-2 border-top">
+                                    <button type="button" class="btn btn-sm btn-outline-danger rounded-circle btn-toggle-wishlist" data-product-id="@item.ProductId" title="Yêu thích">
+                                        <i class="fas fa-heart"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-circle btn-add-to-compare" data-product-id="@item.ProductId" title="So sánh">
+                                        <i class="fas fa-random"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12 text-center py-5">
+                <i class="fas fa-box-open fa-3x text-muted mb-3 d-block"></i>
+                <h5 class="text-muted">Chưa có sản phẩm bán chạy nào!</h5>
+            </div>
+        }
+    </div>
+
+    <!-- Phân trang động hoạt động thật -->
+    @if (totalPages > 1)
+    {
+        <div class="col-12 d-flex justify-content-center mt-5">
+            <div class="pagination d-flex align-items-center flex-row gap-2">
+
+                <!-- Nút Về trang trước -->
+                @if (currentPage > 1)
+                {
+                    <a asp-action="Bestseller" asp-route-page="@(currentPage - 1)"
+                       class="rounded-circle d-flex align-items-center justify-content-center border border-primary text-primary"
+                       style="width: 45px; height: 45px; text-decoration: none;">&laquo;</a>
+                }
+                else
+                {
+                    <span class="rounded-circle d-flex align-items-center justify-content-center border text-muted"
+                          style="width: 45px; height: 45px; opacity: 0.5;">&laquo;</span>
+                }
+
+                <!-- Danh sách các số trang -->
+                @for (int i = 1; i <= totalPages; i++)
+                {
+                    if (i == currentPage)
+                    {
+                        <span class="rounded-circle d-flex align-items-center justify-content-center bg-primary text-white border-0 fw-bold shadow-sm"
+                              style="width: 45px; height: 45px;">@i</span>
+                    }
+                    else
+                    {
+                        <a asp-action="Bestseller" asp-route-page="@i"
+                           class="rounded-circle d-flex align-items-center justify-content-center border border-primary text-dark fw-bold"
+                           style="width: 45px; height: 45px; text-decoration: none;">@i</a>
+                    }
+                }
+
+                <!-- Nút Sang trang sau -->
+                @if (currentPage < totalPages)
+                {
+                    <a asp-action="Bestseller" asp-route-page="@(currentPage + 1)"
+                       class="rounded-circle d-flex align-items-center justify-content-center border border-primary text-primary"
+                       style="width: 45px; height: 45px; text-decoration: none;">&raquo;</a>
+                }
+                else
+                {
+                    <span class="rounded-circle d-flex align-items-center justify-content-center border text-muted"
+                          style="width: 45px; height: 45px; opacity: 0.5;">&raquo;</span>
+                }
+
+            </div>
+        </div>
+       }
+</div>

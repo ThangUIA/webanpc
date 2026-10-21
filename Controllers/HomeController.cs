@@ -83,5 +83,102 @@ namespace WebBanPC.Controllers
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
 
+        // GET: /Home/Contact
+        [HttpGet]
+        public IActionResult Contact()
+        {
+            return View();
+        }
+
+        // POST: /Home/Contact
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Contact(string name, string email, string phone, string subject, string message)
+        {
+            if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(message))
+            {
+                TempData["ErrorMessage"] = "Vui lòng nhập đầy đủ các trường bắt buộc (*).";
+                return View();
+            }
+
+            var contactMsg = new ContactMessage
+            {
+                Name = name.Trim(),
+                Email = email.Trim(),
+                Phone = phone?.Trim(),
+                Subject = subject?.Trim(),
+                Message = message.Trim(),
+                CreatedAt = DateTime.Now,
+                IsRead = false
+            };
+
+            _context.ContactMessages.Add(contactMsg);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Cảm ơn bạn đã liên hệ! Tin nhắn đã được gửi đến ban quản trị.";
+            return RedirectToAction(nameof(Contact));
+        }
+        // GET: /Home/About
+        [HttpGet]
+        public IActionResult About()
+        {
+            return View();
+        }
+
+        // GET: /Home/ShippingInfo
+        [HttpGet]
+        public IActionResult ShippingInfo()
+        {
+            return View();
+        }
+        // GET: /Home/PrivacyPolicy
+        [HttpGet]
+        public IActionResult PrivacyPolicy()
+        {
+            return View();
+        }
+
+        // GET: /Home/TermsOfService
+        [HttpGet]
+        public IActionResult TermsOfService()
+        {
+            return View();
+        }
+        // GET: /Home/WarrantyPolicy
+        [HttpGet]
+        public IActionResult WarrantyPolicy()
+        {
+            return View();
+        }
+
+        // GET: /Home/Faq
+        [HttpGet]
+        public IActionResult Faq()
+        {
+            return View();
+        }
+
+        // GET: /Home/PartnerPortal
+        [HttpGet]
+        public IActionResult PartnerPortal()
+        {
+            return View();
+        }
+        // GET: /Home/Vouchers
+        [HttpGet]
+        public async Task<IActionResult> Vouchers()
+        {
+            var now = DateTime.Now;
+
+            // Lấy các voucher đang kích hoạt, còn hạn dùng và còn lượt sử dụng
+            var vouchers = await _context.Vouchers
+                .AsNoTracking()
+                .Where(v => v.IsActive && v.StartDate <= now && v.EndDate >= now && v.Quantity > 0)
+                .OrderByDescending(v => v.DiscountAmount)
+                .ToListAsync();
+
+            return View(vouchers);
+        }
+
     }
 }

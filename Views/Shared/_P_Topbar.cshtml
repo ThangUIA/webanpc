@@ -1,4 +1,5 @@
-﻿<div class="container-fluid px-5 d-none border-bottom d-lg-block">
+﻿@inject WebBanPC.Models.PcStoreDbContext _context
+<div class="container-fluid px-5 d-none border-bottom d-lg-block">
     <div class="row gx-0 align-items-center">
         <div class="col-lg-4 text-center text-lg-start mb-lg-0">
             <div class="d-inline-flex align-items-center" style="height: 45px;">
@@ -102,37 +103,59 @@
     <div class="row gx-0 align-items-center text-center">
         <div class="col-md-4 col-lg-3 text-center text-lg-start">
             <div class="d-inline-flex align-items-center">
-                <a href="" class="navbar-brand p-0">
-                    <h1 class="display-5 text-primary m-0">
-                        <i class="fas fa-shopping-bag text-secondary me-2"></i>Electro
-                    </h1>
-                    <!-- <img src="img/logo.png" alt="Logo"> -->
-                </a>
+                <div class="col-md-4 col-lg-3 text-center text-lg-start">
+                    <div class="d-inline-flex align-items-center">
+                        <!-- ĐÃ SỬA: Bấm vào luôn về thẳng Trang Chủ -->
+                        <a asp-controller="TrangChu" asp-action="Index" class="navbar-brand p-0">
+                            <h1 class="display-5 text-primary m-0">
+                                <i class="fas fa-shopping-bag text-secondary me-2"></i>Electro
+                            </h1>
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="col-md-4 col-lg-6 text-center">
             <div class="position-relative ps-4">
-                <div class="d-flex border rounded-pill">
-                    <input class="form-control border-0 rounded-pill w-100 py-3" type="text"
-                           data-bs-target="#dropdownToggle123" placeholder="Search Looking For?">
-                    <select class="form-select text-dark border-0 border-start rounded-0 p-3" style="width: 200px;">
-                        <option value="All Category">All Category</option>
-                        <option value="Pest Control-2">Category 1</option>
-                        <option value="Pest Control-3">Category 2</option>
-                        <option value="Pest Control-4">Category 3</option>
-                        <option value="Pest Control-5">Category 4</option>
+                <!-- Form gửi dữ liệu trực tiếp sang HomeController -> action Index bằng phương thức GET -->
+                <form asp-controller="Home" asp-action="Index" method="get" class="d-flex border rounded-pill overflow-hidden bg-white shadow-sm">
+
+                    <!-- 1. Ô nhập từ khóa tìm kiếm (tham số search) -->
+                    <input class="form-control border-0 rounded-pill-start w-100 py-3 ps-4"
+                           type="text"
+                           name="search"
+                           value="@Context.Request.Query["search"]"
+                           placeholder="Bạn tìm linh kiện gì (CPU, RTX 4060, RAM...)?" />
+
+                    <!-- 2. Danh mục chọn lọc (tham số categoryId) -->
+                    <select name="categoryId" class="form-select text-dark border-0 border-start rounded-0 p-3" style="width: 190px;">
+                        <option value="">Tất Cả Danh Mục</option>
+                        @{
+                            var categories = _context.Categories.OrderBy(c => c.CategoryName).ToList();
+                            var currentCatId = Context.Request.Query["categoryId"].ToString();
+                        }
+                        @foreach (var cat in categories)
+                        {
+                            <option value="@cat.CategoryId" selected="@(currentCatId == cat.CategoryId.ToString())">
+                                @cat.CategoryName
+                            </option>
+                        }
                     </select>
-                    <button type="button" class="btn btn-primary rounded-pill py-3 px-5" style="border: 0;">
+
+                    <!-- 3. Nút bấm submit tìm kiếm -->
+                    <button type="submit" class="btn btn-primary rounded-pill-end py-3 px-4 border-0" title="Tìm kiếm">
                         <i class="fas fa-search"></i>
                     </button>
-                </div>
+                </form>
             </div>
         </div>
         <div class="col-md-4 col-lg-3 text-center text-lg-end">
             <div class="d-inline-flex align-items-center">
                 
-                <a href="#" class="text-muted d-flex align-items-center justify-content-center me-3">
-                    <span class="rounded-circle btn-md-square border"><i class="fas fa-random"></i></i>
+                <a asp-controller="Compare" asp-action="Index" class="text-muted d-flex align-items-center justify-content-center me-3 position-relative" title="So sánh sản phẩm">
+                    <span class="rounded-circle btn-md-square border">
+                        <i class="fas fa-random text-primary"></i>
+                    </span>
                 </a>
                 <a asp-controller="Wishlist" asp-action="Index" class="text-muted d-flex align-items-center justify-content-center me-3" title="Danh sách yêu thích">
                     <span class="rounded-circle btn-md-square border"><i class="fas fa-heart text-danger"></i></span>

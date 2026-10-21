@@ -1,0 +1,152 @@
+﻿@model IEnumerable<WebBanPC.Models.Product>
+@{
+    ViewData["Title"] = "So Sánh Sản Phẩm";
+}
+
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="text-primary fw-bold mb-1"><i class="fas fa-exchange-alt me-2"></i>So Sánh Sản Phẩm</h3>
+            <p class="text-muted mb-0">Đối chiếu chi tiết giá cả, danh mục và thông số sản phẩm</p>
+        </div>
+        <div class="d-flex gap-2">
+            @if (Model != null && Model.Any())
+            {
+                <form asp-action="ClearAll" method="post" onsubmit="return confirm('Bạn có chắc muốn xóa toàn bộ danh sách so sánh?');">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-outline-danger rounded-pill btn-sm px-3">
+                        <i class="fas fa-trash-alt me-1"></i> Xóa tất cả
+                    </button>
+                </form>
+            }
+            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-primary rounded-pill btn-sm px-3">
+                <i class="fas fa-arrow-left me-1"></i> Tiếp tục xem hàng
+            </a>
+        </div>
+    </div>
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="card border-0 shadow-sm p-5 text-center">
+            <i class="fas fa-balance-scale fa-3x text-muted mb-3"></i>
+            <h5>Chưa có sản phẩm nào trong danh sách so sánh!</h5>
+            <p class="text-muted">Nhấn vào biểu tượng so sánh ở các sản phẩm để thêm vào danh sách đối chiếu.</p>
+            <div>
+                <a asp-controller="Home" asp-action="Index" class="btn btn-primary rounded-pill px-4 py-2 fw-bold">
+                    Khám Phá Sản Phẩm
+                </a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle text-center mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 200px; text-align: left;" class="p-3 bg-white">Tiêu chí so sánh</th>
+                            @foreach (var p in Model)
+                            {
+                                <th style="min-width: 240px; max-width: 280px;" class="p-3 position-relative">
+                                    <button type="button" class="btn-close position-absolute top-0 end-0 m-2 btn-remove-compare" data-product-id="@p.ProductId" title="Gỡ sản phẩm"></button>
+
+                                    @{
+                                        var img = p.ProductImages?.FirstOrDefault(x => x.IsDefault)?.ImageUrl
+                                        ?? p.ProductImages?.FirstOrDefault()?.ImageUrl
+                                        ?? "img/product-3.png";
+                                    }
+                                    <div class="mb-2">
+                                        <img src="~/@img" class="img-fluid rounded" style="max-height: 140px; object-fit: contain;" alt="@p.Name" />
+                                    </div>
+                                    <h6 class="fw-bold mb-1 text-truncate" title="@p.Name">@p.Name</h6>
+                                    <span class="text-danger fw-bold fs-5">@p.Price.ToString("N0") đ</span>
+                                </th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Hành động mua ngay -->
+                        <tr>
+                            <td class="fw-bold text-start bg-light ps-3">Hành động</td>
+                            @foreach (var p in Model)
+                            {
+                                <td class="p-3">
+                                    <button type="button" class="btn btn-primary btn-sm rounded-pill px-3 fw-bold btn-add-to-cart shadow-sm w-100" data-product-id="@p.ProductId">
+                                        <i class="fas fa-shopping-bag me-1"></i> Thêm Giỏ Hàng
+                                    </button>
+                                </td>
+                            }
+                        </tr>
+
+                        <!-- Danh mục -->
+                        <tr>
+                            <td class="fw-bold text-start bg-light ps-3">Danh mục</td>
+                            @foreach (var p in Model)
+                            {
+                                <td><span class="badge bg-secondary">@(p.Category?.CategoryName ?? "Linh kiện PC")</span></td>
+                            }
+                        </tr>
+
+                        <!-- Mã SKU -->
+                        <tr>
+                            <td class="fw-bold text-start bg-light ps-3">Mã SKU</td>
+                            @foreach (var p in Model)
+                            {
+                                <td class="text-muted">@(string.IsNullOrWhiteSpace(p.Sku) ? "--" : p.Sku)</td>
+                            }
+                        </tr>
+
+                        <!-- Tình trạng kho -->
+                        <tr>
+                            <td class="fw-bold text-start bg-light ps-3">Trạng thái kho</td>
+                            @foreach (var p in Model)
+                            {
+                                <td>
+                                    @if (p.StockQuantity > 0)
+                                    {
+                                        <span class="badge bg-success"><i class="fas fa-check me-1"></i>Còn hàng (@p.StockQuantity)</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">Hết hàng</span>
+                                    }
+                                </td>
+                            }
+                        </tr>
+
+                        <!-- Mô tả / Thông số kỹ thuật -->
+                        <tr>
+                            <td class="fw-bold text-start bg-light ps-3 align-top">Mô tả / Thông số</td>
+                            @foreach (var p in Model)
+                            {
+                                <td class="text-start p-3 align-top text-muted small" style="line-height: 1.6;">
+                                    @Html.Raw(string.IsNullOrWhiteSpace(p.ShortDescription) ? "Đang cập nhật..." : p.ShortDescription)
+                                </td>
+                            }
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        $(document).on('click', '.btn-remove-compare', function () {
+            var btn = $(this);
+            var pId = btn.data('product-id');
+            $.ajax({
+                url: '/Compare/Remove',
+                type: 'POST',
+                data: { productId: pId },
+                success: function (res) {
+                    if (res.success) {
+                        location.reload();
+                    }
+                }
+            });
+        });
+    </script>
+}

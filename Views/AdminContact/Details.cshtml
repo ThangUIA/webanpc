@@ -1,0 +1,53 @@
+﻿@model WebBanPC.Models.ContactMessage
+@{
+    ViewData["Title"] = "Chi Tiết Tin Nhắn #" + Model.Id;
+}
+
+<div class="container py-4 px-lg-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="text-primary fw-bold mb-0">Nội Dung Tin Nhắn</h3>
+        <a asp-action="Index" class="btn btn-outline-secondary rounded-pill px-3">
+            <i class="fas fa-arrow-left me-1"></i> Quay lại Hộp thư
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-3">
+        <div class="card-header bg-light py-3 border-bottom">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold">@(string.IsNullOrWhiteSpace(Model.Subject) ? "Không có chủ đề" : Model.Subject)</h5>
+                <small class="text-muted"><i class="fas fa-clock me-1"></i>@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm:ss")</small>
+            </div>
+        </div>
+        <div class="card-body p-4">
+            <div class="row mb-4 border-bottom pb-3">
+                <div class="col-md-4 mb-2">
+                    <span class="text-muted d-block small">Người gửi:</span>
+                    <strong>@Model.Name</strong>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <span class="text-muted d-block small">Địa chỉ Email:</span>
+                    <a href="mailto:@Model.Email" class="text-primary text-decoration-none"><strong>@Model.Email</strong></a>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <span class="text-muted d-block small">Số điện thoại:</span>
+                    <strong>@(string.IsNullOrWhiteSpace(Model.Phone) ? "Chưa cung cấp" : Model.Phone)</strong>
+                </div>
+            </div>
+
+            <h6 class="fw-bold text-dark mb-3">Nội dung tin nhắn:</h6>
+            <div class="p-3 bg-light rounded border text-dark" style="white-space: pre-wrap; line-height: 1.8;">@Model.Message</div>
+
+            <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                <a href="mailto:@Model.Email?subject=Phản hồi từ Electro PC: @Model.Subject" class="btn btn-success rounded-pill px-4 fw-bold">
+                    <i class="fas fa-reply me-1"></i> Trả lời qua Email
+                </a>
+                <form asp-action="Delete" asp-route-id="@Model.Id" method="post" onsubmit="return confirm('Bạn có chắc muốn xóa tin nhắn này?');">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-outline-danger rounded-pill px-3">
+                        <i class="fas fa-trash-alt me-1"></i> Xóa
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
