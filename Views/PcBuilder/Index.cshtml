@@ -1,0 +1,246 @@
+﻿@{
+    ViewData["Title"] = "Xây Dựng Cấu Hình PC - TCSHOP";
+}
+
+<div class="container-fluid page-header py-4 bg-dark mb-4">
+    <div class="container text-center">
+        <h2 class="text-white display-6 mb-2"><i class="fas fa-tools text-primary me-2"></i>Xây Dựng Cấu Hình PC</h2>
+        <p class="text-white-50 mb-0">Tự do tùy biến dàn máy cá nhân với giá ưu đãi nhất tại TCSHOP</p>
+    </div>
+</div>
+
+<div class="container pb-5">
+    <!-- Thanh tổng tiền & Hành động -->
+    <div class="card shadow-sm border-0 rounded-4 p-3 mb-4 bg-white sticky-top" style="top: 80px; z-index: 99;">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div>
+                <span class="text-muted d-block small">Ước tính chi phí dàn máy:</span>
+                <span class="fs-3 fw-bold text-danger" id="totalPriceDisplay">0 đ</span>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-outline-danger rounded-pill px-3" onclick="resetBuilder()">
+                    <i class="fas fa-trash-alt me-1"></i> Làm mới
+                </button>
+                <button type="button" class="btn btn-outline-dark rounded-pill px-3" onclick="window.print()">
+                    <i class="fas fa-print me-1"></i> In cấu hình
+                </button>
+                <button type="button" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm" onclick="addAllToCart()">
+                    <i class="fas fa-shopping-cart me-1"></i> Mua trọn bộ
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Danh sách linh kiện cần chọn -->
+    <div class="card shadow-sm border-0 rounded-4 p-4 bg-white">
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 180px;">Linh Kiện</th>
+                        <th>Sản Phẩm Đã Chọn</th>
+                        <th style="width: 140px;" class="text-center">Số Lượng</th>
+                        <th style="width: 160px;" class="text-end">Đơn Giá</th>
+                        <th style="width: 130px;" class="text-center">Hành Động</th>
+                    </tr>
+                </thead>
+                <tbody id="builderTableBody">
+                    <!-- Danh sách các nhóm phần cứng PC -->
+                    @foreach (var part in new[] {
+                                        new { Key = "CPU", Name = "Bộ vi xử lý (CPU)", Icon = "fa-microchip" },
+                                        new { Key = "Mainboard", Name = "Bo mạch chủ (Mainboard)", Icon = "fa-square" },
+                                        new { Key = "RAM", Name = "Bộ nhớ trong (RAM)", Icon = "fa-memory" },
+                                        new { Key = "VGA", Name = "Card màn hình (VGA)", Icon = "fa-desktop" },
+                                        new { Key = "SSD", Name = "Ổ cứng (SSD/HDD)", Icon = "fa-hdd" },
+                                        new { Key = "Nguồn", Name = "Nguồn máy tính (PSU)", Icon = "fa-plug" },
+                                        new { Key = "Case", Name = "Vỏ case máy tính", Icon = "fa-cube" },
+                                        new { Key = "Tản", Name = "Tản nhiệt CPU", Icon = "fa-fan" }
+                                        })
+                    {
+                        <tr id="row-@part.Key" class="builder-row" data-category="@part.Key">
+                            <td class="fw-bold">
+                                <i class="fas @part.Icon text-primary me-2"></i>@part.Name
+                            </td>
+                            <td class="selected-product-info">
+                                <div class="text-muted fst-italic default-text">Chưa chọn linh kiện</div>
+                                <div class="d-none product-detail d-flex align-items-center">
+                                    <img src="" class="product-thumb rounded border me-3" style="width: 55px; height: 55px; object-fit: contain;">
+                                    <div>
+                                        <div class="fw-bold product-name text-dark"></div>
+                                        <small class="text-success in-stock-badge">Còn hàng</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <input type="number" class="form-control form-control-sm text-center mx-auto qty-input" value="1" min="1" max="10" style="max-width: 70px;" onchange="updateRowTotal('@part.Key')" disabled />
+                            </td>
+                            <td class="text-end fw-bold text-danger price-display">
+                                0 đ
+                            </td>
+                            <td class="text-center">
+                                <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3 btn-choose" onclick="openChooseModal('@part.Key', '@part.Name')">
+                                    <i class="fas fa-plus me-1"></i> Chọn
+                                </button>
+                                <button type="button" class="btn btn-outline-danger btn-sm rounded-circle btn-remove d-none" onclick="removePart('@part.Key')">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal chọn sản phẩm -->
+<div class="modal fade" id="modalChoosePart" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="modalChooseTitle"><i class="fas fa-list me-2"></i>Chọn Linh Kiện</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="input-group mb-3">
+                    <input type="text" id="partSearchInput" class="form-control" placeholder="Tìm theo tên linh kiện...">
+                    <button class="btn btn-primary" type="button" onclick="loadPartsForCategory()"><i class="fas fa-search"></i></button>
+                </div>
+                <div id="partLoading" class="text-center py-4 d-none">
+                    <div class="spinner-border text-primary" role="status"></div>
+                </div>
+                <div id="partListContainer" class="list-group" style="max-height: 420px; overflow-y: auto;">
+                    <!-- Danh sách linh kiện tải bằng AJAX -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let currentCategoryKey = '';
+        let selectedBuild = {};
+
+        function openChooseModal(categoryKey, categoryName) {
+            currentCategoryKey = categoryKey;
+            $('#modalChooseTitle').html('<i class="fas fa-list me-2"></i>Chọn ' + categoryName);
+            $('#partSearchInput').val('');
+            loadPartsForCategory();
+            var modal = new bootstrap.Modal(document.getElementById('modalChoosePart'));
+            modal.show();
+        }
+
+        function loadPartsForCategory() {
+            var search = $('#partSearchInput').val();
+            $('#partLoading').removeClass('d-none');
+            $('#partListContainer').empty();
+
+            $.getJSON('/PcBuilder/GetPartsByCategory', { categoryKeyword: currentCategoryKey, search: search }, function(res) {
+                $('#partLoading').addClass('d-none');
+                if (res.length === 0) {
+                    $('#partListContainer').html('<div class="p-4 text-center text-muted">Không tìm thấy sản phẩm nào!</div>');
+                    return;
+                }
+
+                res.forEach(item => {
+                    var html = `
+                        <div class="list-group-item list-group-item-action d-flex align-items-center justify-content-between p-3">
+                            <div class="d-flex align-items-center">
+                                <img src="/${item.image}" class="rounded border me-3" style="width: 60px; height: 60px; object-fit: contain;">
+                                <div>
+                                    <h6 class="mb-1 fw-bold text-dark">${item.name}</h6>
+                                    <span class="text-danger fw-bold">${Number(item.price).toLocaleString()} đ</span>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-primary rounded-pill px-3" onclick="selectPart(${JSON.stringify(item).replace(/"/g, '&quot;')})">
+                                <i class="fas fa-check me-1"></i> Chọn
+                            </button>
+                        </div>
+                    `;
+                    $('#partListContainer').append(html);
+                });
+            });
+        }
+
+        function selectPart(item) {
+            selectedBuild[currentCategoryKey] = {
+                id: item.id,
+                name: item.name,
+                price: item.price,
+                image: item.image,
+                qty: 1
+            };
+
+            var row = $('#row-' + currentCategoryKey);
+            row.find('.default-text').addClass('d-none');
+            row.find('.product-detail').removeClass('d-none');
+            row.find('.product-thumb').attr('src', '/' + item.image);
+            row.find('.product-name').text(item.name);
+            row.find('.price-display').text(Number(item.price).toLocaleString() + ' đ');
+            row.find('.qty-input').prop('disabled', false).val(1);
+            row.find('.btn-choose').addClass('d-none');
+            row.find('.btn-remove').removeClass('d-none');
+
+            updateGrandTotal();
+            bootstrap.Modal.getInstance(document.getElementById('modalChoosePart')).hide();
+        }
+
+        function removePart(categoryKey) {
+            delete selectedBuild[categoryKey];
+            var row = $('#row-' + categoryKey);
+            row.find('.default-text').removeClass('d-none');
+            row.find('.product-detail').addClass('d-none');
+            row.find('.price-display').text('0 đ');
+            row.find('.qty-input').prop('disabled', true).val(1);
+            row.find('.btn-choose').removeClass('d-none');
+            row.find('.btn-remove').addClass('d-none');
+
+            updateGrandTotal();
+        }
+
+        function updateRowTotal(categoryKey) {
+            var qty = parseInt($('#row-' + categoryKey).find('.qty-input').val()) || 1;
+            if (selectedBuild[categoryKey]) {
+                selectedBuild[categoryKey].qty = qty;
+                var total = selectedBuild[categoryKey].price * qty;
+                $('#row-' + categoryKey).find('.price-display').text(Number(total).toLocaleString() + ' đ');
+            }
+            updateGrandTotal();
+        }
+
+        function updateGrandTotal() {
+            let total = 0;
+            for (let key in selectedBuild) {
+                total += selectedBuild[key].price * selectedBuild[key].qty;
+            }
+            $('#totalPriceDisplay').text(Number(total).toLocaleString() + ' đ');
+        }
+
+        function resetBuilder() {
+            if (confirm('Bạn có chắc chắn muốn làm mới toàn bộ cấu hình?')) {
+                selectedBuild = {};
+                $('.builder-row').each(function() {
+                    var row = $(this);
+                    row.find('.default-text').removeClass('d-none');
+                    row.find('.product-detail').addClass('d-none');
+                    row.find('.price-display').text('0 đ');
+                    row.find('.qty-input').prop('disabled', true).val(1);
+                    row.find('.btn-choose').removeClass('d-none');
+                    row.find('.btn-remove').addClass('d-none');
+                });
+                updateGrandTotal();
+            }
+        }
+
+        function addAllToCart() {
+            var items = Object.values(selectedBuild);
+            if (items.length === 0) {
+                alert('Vui lòng chọn ít nhất một linh kiện trước khi mua!');
+                return;
+            }
+            alert('Đã thêm trọn bộ cấu hình vào giỏ hàng!');
+            // Gửi ajax qua Cart/AddMultipleToCart hoặc chuyển hướng đến giỏ
+        }
+    </script>
+}
