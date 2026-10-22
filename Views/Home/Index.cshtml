@@ -19,13 +19,26 @@
             <!-- 2. Cột Danh sách sản phẩm bên phải -->
             <div class="col-lg-9 wow fadeInUp" data-wow-delay="0.1s">
                 <!-- Banner SALE -->
-                <div class="rounded mb-4 position-relative">
-                    <img src="~/img/product-banner-3.jpg" class="img-fluid rounded w-100" style="height: 250px; object-fit: cover;" alt="Banner">
-                    <div class="position-absolute rounded d-flex flex-column align-items-center justify-content-center text-center"
-                         style="width: 100%; height: 250px; top: 0; left: 0; background: rgba(242, 139, 0, 0.3);">
-                        <h4 class="display-5 text-primary">SALE</h4>
-                        <h3 class="display-4 text-white mb-4">Get UP To 50% Off</h3>
-                        <a href="#" class="btn btn-primary rounded-pill">Shop Now</a>
+                <div class="rounded mb-4 position-relative overflow-hidden border bg-white shadow-sm" style="min-height: 250px;">
+                    <div class="row g-0 align-items-center h-100">
+                        <!-- Cột trái: Nội dung quảng cáo tiếng Việt -->
+                        <div class="col-7 p-4 ps-lg-5 text-start">
+                            <span class="badge bg-warning text-dark px-3 py-1 rounded-pill fw-bold mb-2">HOT DEAL TUẦN NÀY</span>
+                            <h3 class="text-primary fw-bold mb-1">Màn Hình LG UltraWide</h3>
+                            <h2 class="display-6 fw-bold text-danger mb-2">Giảm Đến 50%</h2>
+                            <p class="text-muted small mb-3 d-none d-md-block">Tấm nền IPS chuẩn màu đồ họa, tần số quét 100Hz, cổng Type-C tiện lợi.</p>
+                            <a asp-controller="Shop" asp-action="Index" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow-sm">
+                                <i class="fas fa-shopping-cart me-2"></i>Mua Ngay
+                            </a>
+                        </div>
+
+                        <!-- Cột phải: Hình ảnh màn hình LG UltraWide -->
+                        <div class="col-5 p-3 text-center">
+                            <img src="~/img/banners/qc2.jpg"
+                                 class="img-fluid"
+                                 style="max-height: 210px; width: auto; object-fit: contain;"
+                                 alt="Màn hình LG UltraWide">
+                        </div>
                     </div>
                 </div>
 

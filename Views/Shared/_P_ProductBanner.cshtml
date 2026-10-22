@@ -1,31 +1,55 @@
 ﻿<div class="container-fluid py-5">
     <div class="container pb-5">
         <div class="row g-4">
+            <!-- Banner 1: ASUS ROG ASTRAL RTX 5080 -->
             <div class="col-lg-6 wow fadeInLeft" data-wow-delay="0.1s">
-                <a href="#">
-                    <div class="bg-primary rounded position-relative">
-                        <img src="img/product-banner.jpg" class="img-fluid w-100 rounded" alt="">
-                        <div class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column justify-content-center rounded p-4"
-                             style="background: rgba(255, 255, 255, 0.5);">
-                            <h3 class="display-5 text-primary">EOS Rebel <br> <span>T7i Kit</span></h3>
-                            <p class="fs-4 text-muted">$899.99</p>
-                            <a href="#" class="btn btn-primary rounded-pill align-self-start py-2 px-4">Shop Now</a>
+                <a asp-controller="Home" asp-action="Index" class="text-decoration-none d-block h-100">
+                    <div class="border rounded-4 bg-white p-4 shadow-sm h-100 position-relative overflow-hidden banner-card">
+                        <div class="row align-items-center h-100">
+                            <!-- Chữ bên trái -->
+                            <div class="col-7 text-start">
+                                <span class="badge bg-danger rounded-pill px-3 py-1 mb-2 fw-bold text-uppercase">Siêu Phẩm Đồ Họa</span>
+                                <h3 class="fw-bold text-dark mb-1">ASUS ROG Astral</h3>
+                                <h4 class="text-primary fw-bold mb-2">RTX 5080 16GB</h4>
+                                <p class="text-muted small mb-3 d-none d-sm-block">Kiến trúc mới nhất, GDDR7, chuẩn PCIe 5.0 cao cấp.</p>
+                                <span class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow-sm">
+                                    <i class="fas fa-shopping-cart me-1"></i> Khám Phá Ngay
+                                </span>
+                            </div>
+                            <!-- Ảnh bên phải -->
+                            <div class="col-5 text-center">
+                                <img src="~/img/banners/qc3.jpg"
+                                     class="img-fluid"
+                                     style="max-height: 200px; width: auto; object-fit: contain;"
+                                     alt="ASUS ROG Astral RTX 5080" />
+                            </div>
                         </div>
                     </div>
                 </a>
             </div>
+
+            <!-- Banner 2: GIGABYTE RTX 5060 Ti -->
             <div class="col-lg-6 wow fadeInRight" data-wow-delay="0.2s">
-                <a href="#">
-                    <div class="text-center bg-primary rounded position-relative">
-                        <img src="img/product-banner-2.jpg" class="img-fluid w-100" alt="">
-                        <div class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column justify-content-center rounded p-4"
-                             style="background: rgba(242, 139, 0, 0.5);">
-                            <h2 class="display-2 text-secondary">SALE</h2>
-                            <h4 class="display-5 text-white mb-4">Get UP To 50% Off</h4>
-                            <a href="#" class="btn btn-secondary rounded-pill align-self-center py-2 px-4">
-                                Shop
-                                Now
-                            </a>
+                <a asp-controller="Home" asp-action="Index" class="text-decoration-none d-block h-100">
+                    <div class="border rounded-4 bg-white p-4 shadow-sm h-100 position-relative overflow-hidden banner-card">
+                        <div class="row align-items-center h-100">
+                            <!-- Chữ bên trái -->
+                            <div class="col-7 text-start">
+                                <span class="badge bg-warning text-dark rounded-pill px-3 py-1 mb-2 fw-bold text-uppercase">Bán Chạy Nhất</span>
+                                <h3 class="fw-bold text-dark mb-1">GIGABYTE Gaming</h3>
+                                <h4 class="text-danger fw-bold mb-2">RTX 5060 Ti 8G</h4>
+                                <p class="text-muted small mb-3 d-none d-sm-block">Cân mượt mọi tựa game AAA, hỗ trợ DLSS 4 & Ray Tracing.</p>
+                                <span class="btn btn-outline-primary rounded-pill px-4 py-2 fw-bold">
+                                    <i class="fas fa-fire me-1"></i> Mua Ngay
+                                </span>
+                            </div>
+                            <!-- Ảnh bên phải -->
+                            <div class="col-5 text-center">
+                                <img src="~/img/banners/qc4.jpg"
+                                     class="img-fluid"
+                                     style="max-height: 200px; width: auto; object-fit: contain;"
+                                     alt="GIGABYTE RTX 5060 Ti" />
+                            </div>
                         </div>
                     </div>
                 </a>

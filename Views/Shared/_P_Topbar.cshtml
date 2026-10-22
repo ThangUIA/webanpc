@@ -3,42 +3,19 @@
     <div class="row gx-0 align-items-center">
         <div class="col-lg-4 text-center text-lg-start mb-lg-0">
             <div class="d-inline-flex align-items-center" style="height: 45px;">
-                <a href="#" class="text-muted me-2"> Help</a><small> / </small>
-                <a href="#" class="text-muted mx-2"> Support</a><small> / </small>
-                <a href="#" class="text-muted ms-2"> Contact</a>
+                <a asp-controller="Home" asp-action="Faq" class="text-muted me-2">Trợ Giúp</a><small> / </small>
+                <a asp-controller="Home" asp-action="WarrantyPolicy" class="text-muted mx-2">Hỗ Trợ</a><small> / </small>
+                <a asp-controller="Home" asp-action="Contact" class="text-muted ms-2">Liên Hệ</a>
             </div>
         </div>
         <div class="col-lg-4 text-center d-flex align-items-center justify-content-center">
-            <small class="text-dark">Call Us:</small>
-            <a href="#" class="text-muted">(+012) 1234 567890</a>
+            <small class="text-dark">Liên Hệ Cho Chúng Tôi:</small>
+            <a href="#" class="text-muted">(+84) 1234 567890</a>
         </div>
 
         <div class="col-lg-4 text-center text-lg-end">
             <div class="d-inline-flex align-items-center" style="height: 45px;">
-                <div class="dropdown">
-                    <a href="#" class="dropdown-toggle text-muted me-2" data-bs-toggle="dropdown">
-                        <small>
-                            USD
-                        </small>
-                    </a>
-                    <div class="dropdown-menu rounded">
-                        <a href="#" class="dropdown-item"> Euro</a>
-                        <a href="#" class="dropdown-item"> Dolar</a>
-                    </div>
-                </div>
-                <div class="dropdown">
-                    <a href="#" class="dropdown-toggle text-muted mx-2" data-bs-toggle="dropdown">
-                        <small>
-                            English
-                        </small>
-                    </a>
-                    <div class="dropdown-menu rounded">
-                        <a href="#" class="dropdown-item"> English</a>
-                        <a href="#" class="dropdown-item"> Turkish</a>
-                        <a href="#" class="dropdown-item"> Spanol</a>
-                        <a href="#" class="dropdown-item"> Italiano</a>
-                    </div>
-                </div>
+                
                 <div class="dropdown">
                     @if (User.Identity != null && User.Identity.IsAuthenticated)
                     {
@@ -108,7 +85,7 @@
                         <!-- ĐÃ SỬA: Bấm vào luôn về thẳng Trang Chủ -->
                         <a asp-controller="TrangChu" asp-action="Index" class="navbar-brand p-0">
                             <h1 class="display-5 text-primary m-0">
-                                <i class="fas fa-shopping-bag text-secondary me-2"></i>Electro
+                                <i class="fas fa-shopping-bag text-secondary me-2"></i>TCSHOP
                             </h1>
                         </a>
                     </div>

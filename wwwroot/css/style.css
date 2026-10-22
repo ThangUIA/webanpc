@@ -28,6 +28,14 @@
     z-index: 99;
 }
 
+.banner-hover img {
+    transition: transform 0.35s ease;
+}
+
+.banner-hover:hover img {
+    transform: scale(1.03);
+}
+
 /*** Button Start ***/
 .btn {
     font-weight: 600;
