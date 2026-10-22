@@ -1,0 +1,111 @@
+﻿@model WebBanPC.Models.BannerCrudVM
+@{
+    ViewData["Title"] = "Chỉnh Sửa Banner";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-warning text-dark py-3">
+                    <h5 class="mb-0 fw-bold"><i class="fas fa-edit me-2"></i>Chỉnh Sửa Banner</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Edit" asp-route-id="@Model.BannerId" method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <!-- 2 thẻ hidden bắt buộc để tránh lỗi 404 và mất ảnh khi submit -->
+                        <input type="hidden" asp-for="BannerId" />
+                        <input type="hidden" asp-for="CurrentImageUrl" />
+
+                        <div class="mb-3">
+                            <label asp-for="Title" class="form-label fw-bold"></label>
+                            <input asp-for="Title" class="form-control" placeholder="VD: GIÁ RẺ VÔ ĐỊCH" required />
+                            <span asp-validation-for="Title" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Subtitle" class="form-label fw-bold"></label>
+                            <input asp-for="Subtitle" class="form-control" placeholder="VD: Bảo hành chính hãng 36 tháng" />
+                            <span asp-validation-for="Subtitle" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="LinkUrl" class="form-label fw-bold"></label>
+                            <input asp-for="LinkUrl" class="form-control" placeholder="/Home/Index" />
+                            <span asp-validation-for="LinkUrl" class="text-danger"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Position" class="form-label fw-bold"></label>
+                                <select asp-for="Position" class="form-select">
+                                    <option value="MainCarousel">Main Carousel (Slider trượt lớn)</option>
+                                    <option value="HeaderRight">Header Right (Banner góc phải)</option>
+                                    <option value="MidBanner">Mid Banner (Banner giữa trang)</option>
+                                </select>
+                                <span asp-validation-for="Position" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="DisplayOrder" class="form-label fw-bold"></label>
+                                <input asp-for="DisplayOrder" type="number" class="form-control" />
+                                <span asp-validation-for="DisplayOrder" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Khối hiển thị ảnh hiện tại và chọn ảnh mới -->
+                        <div class="mb-3 border rounded p-3 bg-light">
+                            <label class="form-label fw-bold d-block mb-2">Ảnh hiện tại:</label>
+                            <div class="mb-3 text-center bg-white p-2 border rounded">
+                                @if (!string.IsNullOrEmpty(Model.CurrentImageUrl))
+                                {
+                                    <img src="~/@Model.CurrentImageUrl"
+                                         id="previewImg"
+                                         class="img-fluid rounded"
+                                         style="max-height: 160px; object-fit: contain;"
+                                         alt="Banner hiện tại" />
+                                }
+                                else
+                                {
+                                    <span class="text-muted fst-italic">Chưa có ảnh</span>
+                                }
+                            </div>
+
+                            <label asp-for="ImageFile" class="form-label fw-bold">Chọn ảnh mới thay thế (để trống nếu giữ ảnh cũ)</label>
+                            <input asp-for="ImageFile" type="file" class="form-control" accept="image/*" onchange="previewNewImage(this);" />
+                            <span asp-validation-for="ImageFile" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-check mb-4">
+                            <input asp-for="IsActive" class="form-check-input" />
+                            <label asp-for="IsActive" class="form-check-label fw-bold"></label>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+                            <button type="submit" class="btn btn-warning px-4 fw-bold">Cập Nhật Banner</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        function previewNewImage(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    $('#previewImg').attr('src', e.target.result);
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
+}

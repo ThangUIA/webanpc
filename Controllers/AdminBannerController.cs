@@ -106,21 +106,30 @@ namespace WebBanPC.Controllers
             return View(vm);
         }
 
-        // POST: /AdminBanner/Edit/5
+        // POST: /AdminBanner/Edit hoặc /AdminBanner/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, BannerCrudVM vm)
+        public async Task<IActionResult> Edit(int? id, BannerCrudVM vm)
         {
-            if (id != vm.BannerId) return BadRequest();
+            // Xác định ID chuẩn xác từ URL hoặc từ ViewModel gửi lên
+            int targetId = id ?? vm.BannerId;
+
+            if (targetId <= 0)
+            {
+                return BadRequest();
+            }
+
+            var banner = await _context.Banners.FindAsync(targetId);
+            if (banner == null)
+            {
+                return NotFound();
+            }
 
             if (ModelState.IsValid)
             {
-                var banner = await _context.Banners.FindAsync(id);
-                if (banner == null) return NotFound();
-
                 banner.Title = vm.Title;
                 banner.Subtitle = vm.Subtitle;
-                banner.LinkUrl = vm.LinkUrl;
+                banner.LinkUrl = string.IsNullOrWhiteSpace(vm.LinkUrl) ? "/Home/Index" : vm.LinkUrl;
                 banner.Position = vm.Position;
                 banner.DisplayOrder = vm.DisplayOrder;
                 banner.IsActive = vm.IsActive;
@@ -130,14 +139,40 @@ namespace WebBanPC.Controllers
                     string? newImg = await UploadBannerImageAsync(vm.ImageFile);
                     if (!string.IsNullOrEmpty(newImg))
                     {
+                        if (!string.IsNullOrEmpty(banner.ImageUrl))
+                        {
+                            string oldPath = Path.Combine(_env.WebRootPath, banner.ImageUrl.Replace("/", "\\"));
+                            if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
+                        }
                         banner.ImageUrl = newImg;
                     }
                 }
 
                 await _context.SaveChangesAsync();
+
+                // Kiểm tra xem yêu cầu gửi từ AJAX hay Form submit thông thường
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return Json(new
+                    {
+                        success = true,
+                        message = "Cập nhật banner thành công!",
+                        newTitle = banner.Title,
+                        newSubtitle = banner.Subtitle,
+                        newImageUrl = banner.ImageUrl
+                    });
+                }
+
                 TempData["SuccessMessage"] = "Cập nhật banner thành công!";
                 return RedirectToAction(nameof(Index));
             }
+
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return Json(new { success = false, message = "Dữ liệu không hợp lệ!" });
+            }
+
+            vm.CurrentImageUrl = banner.ImageUrl;
             return View(vm);
         }
 
@@ -158,5 +193,52 @@ namespace WebBanPC.Controllers
             }
             return RedirectToAction(nameof(Index));
         }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> QuickEditBanner(int bannerId, string title, string? subtitle, string? linkUrl, IFormFile? imageFile)
+        {
+            var banner = await _context.Banners.FindAsync(bannerId);
+            if (banner == null)
+            {
+                return Json(new { success = false, message = "Không tìm thấy banner cần sửa!" });
+            }
+
+            if (string.IsNullOrWhiteSpace(title))
+            {
+                return Json(new { success = false, message = "Tiêu đề không được để trống!" });
+            }
+
+            banner.Title = title.Trim();
+            banner.Subtitle = subtitle?.Trim();
+            banner.LinkUrl = string.IsNullOrWhiteSpace(linkUrl) ? "/Home/Index" : linkUrl.Trim();
+
+            // Nếu người dùng có chọn đổi ảnh mới
+            if (imageFile != null && imageFile.Length > 0)
+            {
+                string? newImgPath = await UploadBannerImageAsync(imageFile);
+                if (!string.IsNullOrEmpty(newImgPath))
+                {
+                    // Xóa file ảnh cũ nếu tồn tại trong wwwroot
+                    if (!string.IsNullOrEmpty(banner.ImageUrl))
+                    {
+                        string oldPath = Path.Combine(_env.WebRootPath, banner.ImageUrl.Replace("/", "\\"));
+                        if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
+                    }
+                    banner.ImageUrl = newImgPath;
+                }
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Json(new
+            {
+                success = true,
+                message = "Cập nhật banner thành công!",
+                newImageUrl = "/" + banner.ImageUrl,
+                title = banner.Title,
+                subtitle = banner.Subtitle
+            });
+        }
+
     }
 }

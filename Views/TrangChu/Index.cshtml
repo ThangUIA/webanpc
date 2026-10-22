@@ -68,18 +68,57 @@
             </div>
         </div>
 
-        <div class="col-12 col-lg-5 col-xl-3 wow fadeInRight" data-wow-delay="0.1s">
-            <div class="carousel-header-banner h-100">
-                <img src="~/img/header-img.jpg" class="img-fluid w-100 h-100" style="object-fit: cover;" alt="Ưu đãi nóng">
+        <div class="col-12 col-lg-5 col-xl-3 wow fadeInRight position-relative" data-wow-delay="0.1s">
+            @{
+                var rb = Model.RightBanner;
+                int rbId = rb?.BannerId ?? 0;
+                string rbTitle = rb?.Title ?? "Giảm Đến 20% Toàn Bộ Linh Kiện";
+                string rbSub = rb?.Subtitle ?? "Build PC Trọn Gói";
+                string rbLink = string.IsNullOrEmpty(rb?.LinkUrl) ? "/Shop" : rb.LinkUrl;
+                string rbImg = string.IsNullOrEmpty(rb?.ImageUrl) ? "img/header-img.jpg" : rb.ImageUrl;
+            }
+
+            <!-- Nút sửa Banner góc phải khi bật Edit Mode -->
+            @if (isEditMode)
+            {
+                <div class="position-absolute top-0 end-0 m-3" style="z-index: 105;">
+                    @if (rb != null)
+                    {
+                        <button type="button"
+                                class="btn btn-warning btn-sm rounded-pill shadow-lg px-3 py-2 fw-bold text-dark border-0"
+                                onclick="openEditBannerModal(@rbId, '@Html.Raw(rbTitle)', '@Html.Raw(rbSub)', '@Html.Raw(rbLink)')">
+                            <i class="fas fa-edit me-1"></i> Sửa Banner
+                        </button>
+                    }
+                    else
+                    {
+                        <button type="button"
+                                class="btn btn-success btn-sm rounded-pill shadow-lg px-3 py-2 fw-bold border-0"
+                                onclick="openCreateBannerModal()">
+                            <i class="fas fa-plus me-1"></i> Tạo Banner Phải
+                        </button>
+                    }
+                </div>
+            }
+
+            <div class="carousel-header-banner h-100 position-relative rounded overflow-hidden">
+                <img id="banner-img-@rbId"
+                     src="~/@rbImg"
+                     onerror="this.onerror=null;this.src='/img/header-img.jpg';"
+                     class="img-fluid w-100 h-100"
+                     style="object-fit: cover;"
+                     alt="@rbTitle">
+
                 <div class="carousel-banner-offer">
                     <p class="bg-primary text-white rounded fs-5 py-2 px-4 mb-0 me-3">Sale Khủng</p>
                     <p class="text-primary fs-5 fw-bold mb-0">HOT DEAL</p>
                 </div>
+
                 <div class="carousel-banner">
                     <div class="carousel-banner-content text-center p-4">
-                        <span class="d-block text-warning mb-2">Build PC Trọn Gói</span>
-                        <h4 class="text-white">Giảm Đến 20% Toàn Bộ Linh Kiện</h4>
-                        <a asp-controller="Home" asp-action="Index" class="btn btn-primary rounded-pill py-2 px-4 mt-3">
+                        <span id="banner-sub-@rbId" class="d-block text-warning mb-2 fw-bold">@rbSub</span>
+                        <h4 id="banner-title-@rbId" class="text-white fw-bold">@rbTitle</h4>
+                        <a href="@rbLink" class="btn btn-primary rounded-pill py-2 px-4 mt-3 fw-bold">
                             <i class="fas fa-arrow-right me-2"></i>Khám phá
                         </a>
                     </div>
@@ -269,74 +308,76 @@
             </div>
         </div>
     </div>
+}
+@section Scripts {
+    <script>
+        function openCreateBannerModal() {
+            $('#formCreateBanner')[0].reset();
+            $('#modalCreateBanner').modal('show');
+        }
 
-    @section Scripts {
-        <script>
-            function openCreateBannerModal() {
-                $('#formCreateBanner')[0].reset();
-                $('#modalCreateBanner').modal('show');
-            }
+        function openEditBannerModal(id, title, sub, link) {
+            $('#editBannerId').val(id);
+            $('#editBannerTitle').val(title);
+            $('#editBannerSub').val(sub);
+            $('#editBannerLink').val(link);
+            $('#modalEditBanner').modal('show');
+        }
 
-            function openEditBannerModal(id, title, sub, link) {
-                $('#editBannerId').val(id);
-                $('#editBannerTitle').val(title);
-                $('#editBannerSub').val(sub);
-                $('#editBannerLink').val(link);
-                $('#modalEditBanner').modal('show');
-            }
+        // AJAX tạo mới Banner
+        $('#formCreateBanner').on('submit', function (e) {
+            e.preventDefault();
+            var formData = new FormData(this);
 
-            // AJAX tạo mới Banner
-            $('#formCreateBanner').on('submit', function (e) {
-                e.preventDefault();
-                var formData = new FormData(this);
-
-                $.ajax({
-                    url: '/AdminBanner/Create',
-                    type: 'POST',
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    success: function () {
-                        $('#modalCreateBanner').modal('hide');
-                        alert('Thêm Banner thành công!');
-                        location.reload();
-                    },
-                    error: function () {
-                        alert('Có lỗi xảy ra khi tạo Banner.');
-                    }
-                });
+            $.ajax({
+                url: '/AdminBanner/Create',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function () {
+                    $('#modalCreateBanner').modal('hide');
+                    alert('Thêm Banner thành công!');
+                    location.reload();
+                },
+                error: function () {
+                    alert('Có lỗi xảy ra khi tạo Banner.');
+                }
             });
+        });
 
-            // AJAX sửa Banner
-            $('#formEditBanner').on('submit', function (e) {
-                e.preventDefault();
-                var formData = new FormData(this);
-                var bannerId = $('#editBannerId').val();
+        // AJAX sửa Banner
+                    $('#formEditBanner').on('submit', function (e) {
+            e.preventDefault();
+            var formData = new FormData(this);
+            var bannerId = $('#editBannerId').val();
 
-                $.ajax({
-                    url: '/AdminProduct/QuickUpdateBanner',
-                    type: 'POST',
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    success: function (res) {
-                        if (res.success) {
-                            $('#banner-title-' + bannerId).text(res.newTitle);
-                            $('#banner-sub-' + bannerId).text(res.newSubtitle);
-                            if (res.newImageUrl) {
-                                $('#banner-img-' + bannerId).attr('src', '/' + res.newImageUrl);
-                            }
-                            $('#modalEditBanner').modal('hide');
-                            alert('Cập nhật Banner thành công!');
-                        } else {
-                            alert(res.message);
+            $.ajax({
+                url: '/AdminBanner/Edit/' + bannerId, // Gắn kèm ID vào URL để Controller nhận đủ
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                success: function (res) {
+                    if (res.success) {
+                        $('#banner-title-' + bannerId).text(res.newTitle);
+                        $('#banner-sub-' + bannerId).text(res.newSubtitle);
+                        if (res.newImageUrl) {
+                            $('#banner-img-' + bannerId).attr('src', '/' + res.newImageUrl);
                         }
-                    },
-                    error: function () {
-                        alert('Có lỗi xảy ra khi lưu Banner.');
+                        $('#modalEditBanner').modal('hide');
+                        alert('Cập nhật Banner thành công!');
+                    } else {
+                        alert(res.message);
                     }
-                });
+                },
+                error: function (xhr) {
+                    alert('Lỗi máy chủ (' + xhr.status + '): Không thể lưu Banner!');
+                }
             });
-        </script>
-    }
+        });
+    </script>
 }
