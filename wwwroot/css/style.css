@@ -886,8 +886,33 @@ img, svg, video {
     height: auto;
 }
 
+/* Đảm bảo body và thanh điều hướng dính sát viền trên */
+body {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
+/* Ép thanh nav-bar luôn dính sát mép trên trên mọi màn hình */
+.nav-bar.sticky-top {
+    top: 0 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    padding-top: 0 !important;
+    z-index: 1020 !important;
+}
+
+.admin-mode-bar {
+    margin-bottom: 0 !important;
+}
+
 /* 1. Màn hình điện thoại nhỏ & vừa (Dưới 768px) */
 @media (max-width: 767.98px) {
+    /* Navbar trên mobile: luôn dính chặt mép trên cùng */
+    .nav-bar.sticky-top {
+        top: 0 !important;
+        padding: 0 !important;
+    }
+
     /* Thanh Topbar / Thanh tìm kiếm Header */
     .topbar {
         font-size: 12px;
@@ -926,7 +951,6 @@ img, svg, video {
     }
 
     /* 2. Bảng Xây Dựng Cấu Hình PC (PC Builder) trên điện thoại */
-    /* Chuyển dạng table truyền thống sang dạng card xếp dọc */
     .builder-table-responsive table,
     .builder-table-responsive thead,
     .builder-table-responsive tbody,
@@ -967,13 +991,15 @@ img, svg, video {
             margin: 8px 0;
         }
 
-    /* Thanh Sticky Tổng Tiền của PC Builder */
-    .sticky-top {
+    /* CHỈ ÁP DỤNG CÁCH 60PX CHO KHỐI TỔNG TIỀN TRONG PC BUILDER (KHÔNG ẢNH HƯỞNG NAVBAR) */
+    .builder-summary.sticky-top,
+    .card.sticky-top {
         top: 60px !important;
         padding: 10px !important;
     }
 
-        .sticky-top .fs-3 {
+        .builder-summary.sticky-top .fs-3,
+        .card.sticky-top .fs-3 {
             font-size: 1.3rem !important;
         }
 
@@ -998,18 +1024,42 @@ img, svg, video {
     }
 }
 
-/* 3. Tối ưu thanh Menu điều hướng Navbar */
+/* Tối ưu hiển thị menu Navbar trên điện thoại */
 @media (max-width: 991.98px) {
-    .navbar-collapse {
-        background-color: #ffffff;
-        padding: 15px;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    #navbarCollapse {
+        background-color: #ffffff !important;
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
         margin-top: 10px;
+        margin-bottom: 10px;
+        border: 1px solid rgba(0, 0, 0, 0.08);
     }
 
-    .navbar-nav .nav-link {
-        padding: 10px 15px !important;
-        border-bottom: 1px solid #f1f1f1;
+        #navbarCollapse .nav-link {
+            color: #212529 !important;
+            padding-top: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #f1f3f5;
+        }
+
+            #navbarCollapse .nav-link:hover {
+                background-color: #f8f9fa;
+                color: #ff8800 !important;
+            }
+
+        #navbarCollapse .dropdown-menu {
+            background-color: #f8f9fa;
+            margin-left: 15px;
+            margin-right: 15px;
+        }
+
+    /* Thu nhỏ tiêu đề banner trên mobile để không tràn khung */
+    .header-carousel .carousel-content h1 {
+        font-size: 1.5rem !important;
+        line-height: 1.3 !important;
+    }
+
+    .header-carousel .carousel-content p {
+        font-size: 0.9rem !important;
     }
 }
