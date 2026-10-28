@@ -20,11 +20,11 @@ public partial class PcStoreDbContext : DbContext
     public virtual DbSet<Attribute> Attributes { get; set; }
     public virtual DbSet<Banner> Banners { get; set; }
     public virtual DbSet<Voucher> Vouchers { get; set; }
-
+    public virtual DbSet<ProductReview> ProductReviews { get; set; }
     public virtual DbSet<Brand> Brands { get; set; }
-
+    public virtual DbSet<SpinHistory> SpinHistories { get; set; }
     public virtual DbSet<Wishlist> Wishlists { get; set; }
-
+    public virtual DbSet<LuckyWheelPrize> LuckyWheelPrizes { get; set; }
     public virtual DbSet<Category> Categories { get; set; }
 
     public virtual DbSet<Order> Orders { get; set; }

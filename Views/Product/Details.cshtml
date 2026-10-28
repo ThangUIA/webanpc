@@ -5,6 +5,9 @@
     var defaultImg = p.ProductImages?.FirstOrDefault(x => x.IsDefault)?.ImageUrl
                      ?? p.ProductImages?.FirstOrDefault()?.ImageUrl
                      ?? "img/product-3.png";
+    // Lấy điểm trung bình và tổng số lượt đánh giá đã tính từ Controller
+    double avgRating = ViewBag.AverageRating != null ? (double)ViewBag.AverageRating : 0;
+    int totalReviews = ViewBag.TotalReviews != null ? (int)ViewBag.TotalReviews : 0;
 }
 
 <!-- Header Điều hướng (Breadcrumb) -->
@@ -55,14 +58,46 @@
                 <h4 class="fw-bold text-danger mb-3">@p.Price.ToString("N0") đ</h4>
 
                 <div class="d-flex align-items-center mb-3">
-                    <span class="text-warning me-2">
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
+                    <div class="text-warning me-2">
+                        @if (totalReviews == 0)
+                        {
+                            @* Chưa có đánh giá: hiển thị 5 sao rỗng *@
+                            for (int i = 1; i <= 5; i++)
+                            {
+                                <i class="far fa-star text-muted"></i>
+                            }
+                        }
+                        else
+                        {
+                            @* Đã có đánh giá: tô vàng theo điểm trung bình (hỗ trợ cả nửa sao) *@
+                            for (int i = 1; i <= 5; i++)
+                            {
+                                if (avgRating >= i)
+                                {
+                                    <i class="fas fa-star text-warning"></i>
+                                }
+                                else if (avgRating >= i - 0.5)
+                                {
+                                    <i class="fas fa-star-half-alt text-warning"></i>
+                                }
+                                else
+                                {
+                                    <i class="far fa-star text-muted"></i>
+                                }
+                            }
+                        }
+                    </div>
+
+                    <span class="text-muted small">
+                        @if (totalReviews > 0)
+                        {
+                            <span>(@avgRating.ToString("0.0") dựa trên @totalReviews lượt đánh giá)</span>
+                        }
+                        else
+                        {
+                            <span>(Chưa có đánh giá)</span>
+                        }
                     </span>
-                    <small class="text-muted">(5.0 đánh giá từ khách hàng)</small>
                 </div>
 
                 <div class="mb-3 small">
@@ -120,9 +155,9 @@
                 </ul>
                 <div class="tab-content border rounded p-4 bg-white">
                     <div class="tab-pane fade show active" id="tab-description">
-                        @if (!string.IsNullOrWhiteSpace(p.ShortDescription))
+                        @if (!string.IsNullOrWhiteSpace(p.FullDescription))
                         {
-                            <div>@Html.Raw(p.ShortDescription)</div>
+                            <div>@Html.Raw(p.FullDescription)</div>
                         }
                         else
                         {
@@ -135,6 +170,108 @@
                             <li>Đổi mới trong vòng 30 ngày nếu phát sinh lỗi từ nhà sản xuất.</li>
                             <li>Hỗ trợ kiểm tra và vệ sinh máy miễn phí tại cửa hàng.</li>
                         </ul>
+                    </div>
+                </div>
+            </div>
+            <!-- KHỐI BÌNH LUẬN VÀ ĐÁNH GIÁ -->
+            <div class="card shadow-sm border-0 rounded-4 p-4 mt-5 bg-white">
+                <div class="row">
+                    <!-- Cột form gửi đánh giá -->
+                    <div class="col-lg-5 mb-4 mb-lg-0 border-end">
+                        <h4 class="fw-bold mb-3"><i class="fas fa-star text-warning me-2"></i>Đánh Giá Sản Phẩm</h4>
+
+                        <div class="alert alert-light border d-flex align-items-center mb-3">
+                            <i class="fas fa-user-circle fa-2x text-secondary me-2"></i>
+                            <div>
+                                <span class="small text-muted d-block">Bạn đang bình luận với tư cách:</span>
+                                <strong class="text-primary">
+                                    @(User.Identity != null && User.Identity.IsAuthenticated ? User.Identity.Name : "Khách vãng lai (Chưa đăng nhập)")
+                                </strong>
+                            </div>
+                        </div>
+
+                        <form id="reviewForm">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="productId" value="@Model.Product.ProductId" />
+
+                            <!-- Chọn số sao đánh giá -->
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Chọn mức độ hài lòng:</label>
+                                <div class="rating-stars fs-4 text-warning" style="cursor: pointer;">
+                                    <i class="fas fa-star star-item" data-value="1"></i>
+                                    <i class="fas fa-star star-item" data-value="2"></i>
+                                    <i class="fas fa-star star-item" data-value="3"></i>
+                                    <i class="fas fa-star star-item" data-value="4"></i>
+                                    <i class="fas fa-star star-item" data-value="5"></i>
+                                </div>
+                                <input type="hidden" name="rating" id="selectedRating" value="5" />
+                                <small id="ratingLabel" class="text-muted fw-bold">5 sao - Rất tuyệt vời</small>
+                            </div>
+
+                            <!-- Ô nhập nhận xét -->
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Nội dung nhận xét:</label>
+                                <textarea class="form-control" name="comment" id="commentText" rows="4" placeholder="Chia sẻ cảm nhận về hiệu năng, tản nhiệt, đóng gói của linh kiện này..." required></textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">
+                                <i class="fas fa-paper-plane me-1"></i> Gửi Đánh Giá
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Cột danh sách các đánh giá đã có -->
+                    <div class="col-lg-7 ps-lg-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4 class="fw-bold mb-0">Nhận Xét Từ Khách Hàng</h4>
+                            <span class="badge bg-primary rounded-pill fs-6 px-3 py-2">
+                                Điểm: @ViewBag.AverageRating.ToString("0.0") / 5 <i class="fas fa-star text-warning"></i> (@ViewBag.TotalReviews lượt)
+                            </span>
+                        </div>
+
+                        <div id="reviewsList" class="overflow-auto pe-2" style="max-height: 460px;">
+                            @if (ViewBag.Reviews != null && ((List<WebBanPC.Models.ProductReview>)ViewBag.Reviews).Any())
+                            {
+                                foreach (var rev in (List<WebBanPC.Models.ProductReview>)ViewBag.Reviews)
+                                {
+                                    var author = rev.UserId.HasValue ? (rev.User?.FullName ?? "Thành viên") : (rev.GuestName ?? "Khách vãng lai");
+                                    <div class="review-item border-bottom pb-3 mb-3">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <div class="d-flex align-items-center">
+                                                <div class="rounded-circle bg-light text-primary d-flex align-items-center justify-content-center me-2 fw-bold" style="width: 36px; height: 36px;">
+                                                    @(rev.UserId.HasValue ? "TV" : "K")
+                                                </div>
+                                                <div>
+                                                    <h6 class="mb-0 fw-bold">@author</h6>
+                                                    <small class="text-muted">@rev.CreatedAt?.ToString("dd/MM/yyyy HH:mm")</small>
+                                                </div>
+                                            </div>
+                                            <div class="text-warning">
+                                                @for (int i = 1; i <= 5; i++)
+                                                {
+                                                    if (i <= rev.Rating)
+                                                    {
+                                                        <i class="fas fa-star"></i>
+                                                    }
+                                                    else
+                                                    {
+                                                        <i class="far fa-star text-muted"></i>
+                                                    }
+                                                }
+                                            </div>
+                                        </div>
+                                        <p class="text-dark mb-0 ps-5 ms-1">@rev.Comment</p>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <div id="emptyReviewNotice" class="text-center py-5 text-muted">
+                                    <i class="far fa-comments fa-3x mb-2 text-secondary"></i>
+                                    <p>Chưa có đánh giá nào cho linh kiện này. Hãy là người đầu tiên chia sẻ cảm nhận!</p>
+                                </div>
+                            }
+                        </div>
                     </div>
                 </div>
             </div>
@@ -203,6 +340,115 @@
                 },
                 error: function () {
                     alert('Có lỗi xảy ra khi thêm vào giỏ hàng!');
+                }
+            });
+        });
+            const ratingTexts = {
+            1: "1 sao - Rất tệ",
+            2: "2 sao - Không hài lòng",
+            3: "3 sao - Bình thường",
+            4: "4 sao - Hài lòng",
+            5: "5 sao - Rất tuyệt vời"
+        };
+
+        // Chọn số sao
+        $('.star-item').on('click', function() {
+            let val = $(this).data('value');
+            $('#selectedRating').val(val);
+            $('#ratingLabel').text(ratingTexts[val]);
+
+            // Đổi màu sao
+            $('.star-item').each(function() {
+                let itemVal = $(this).data('value');
+                if (itemVal <= val) {
+                    $(this).removeClass('far text-muted').addClass('fas text-warning');
+                } else {
+                    $(this).removeClass('fas text-warning').addClass('far text-muted');
+                }
+            });
+        });
+
+        // Hover hiệu ứng sao
+        $('.star-item').hover(
+            function() {
+                let val = $(this).data('value');
+                $('.star-item').each(function() {
+                    if ($(this).data('value') <= val) {
+                        $(this).addClass('text-warning');
+                    }
+                });
+            },
+            function() {
+                let currentSelected = $('#selectedRating').val();
+                $('.star-item').each(function() {
+                    if ($(this).data('value') > currentSelected) {
+                        $(this).removeClass('text-warning').addClass('far text-muted');
+                    }
+                });
+            }
+        );
+
+        // Gửi đánh giá qua AJAX
+        $('#reviewForm').on('submit', function(e) {
+            e.preventDefault();
+
+            let formData = $(this).serialize();
+            let submitBtn = $(this).find('button[type="submit"]');
+            submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Đang gửi...');
+
+            $.ajax({
+                url: '/Product/AddReview',
+                type: 'POST',
+                data: formData,
+                success: function(res) {
+                    submitBtn.prop('disabled', false).html('<i class="fas fa-paper-plane me-1"></i> Gửi Đánh Giá');
+
+                    if (res.success) {
+                        $('#emptyReviewNotice').remove();
+
+                        // Tạo HTML cụm sao
+                        let starsHtml = '';
+                        for (let i = 1; i <= 5; i++) {
+                            if (i <= res.rating) {
+                                starsHtml += '<i class="fas fa-star"></i>';
+                            } else {
+                                starsHtml += '<i class="far fa-star text-muted"></i>';
+                            }
+                        }
+
+                        // Thêm bình luận mới lên đầu danh sách
+                        let newReviewHtml = `
+                            <div class="review-item border-bottom pb-3 mb-3 bg-light rounded p-2">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <div class="d-flex align-items-center">
+                                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-2 fw-bold" style="width: 36px; height: 36px;">
+                                            ${res.reviewerName.substring(0, 2).toUpperCase()}
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0 fw-bold text-primary">${res.reviewerName} <span class="badge bg-success small">Mới</span></h6>
+                                            <small class="text-muted">${res.date}</small>
+                                        </div>
+                                    </div>
+                                    <div class="text-warning">${starsHtml}</div>
+                                </div>
+                                <p class="text-dark mb-0 ps-5 ms-1">${res.comment}</p>
+                            </div>
+                        `;
+
+                        $('#reviewsList').prepend(newReviewHtml);
+                        $('#commentText').val('');
+                        alert(res.message);
+                                // THÊM ĐOẠN NÀY VÀO ĐÂY:
+                        setTimeout(function () {
+                        location.reload();
+                          }, 1000);
+                    } else {
+                        alert(res.message);
+                    }
+                },
+                error: function() {
+                    submitBtn.prop('disabled', false).html('<i class="fas fa-paper-plane me-1"></i> Gửi Đánh Giá');
+                    alert('Có lỗi xảy ra, vui lòng thử lại!');
                 }
             });
         });

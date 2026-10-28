@@ -31,5 +31,10 @@ namespace WebBanPC.Models
         [DataType(DataType.Password)]
         [Compare("NewPassword", ErrorMessage = "Mật khẩu xác nhận không khớp.")]
         public string? ConfirmPassword { get; set; }
+        [DataType(DataType.Password)]
+        [Display(Name = "Xác nhận mật khẩu mới")]
+        [Compare("NewPassword", ErrorMessage = "Mật khẩu xác nhận không khớp với mật khẩu mới")]
+        public string? ConfirmNewPassword { get; set; }
+        public int RewardPoints { get; set; } = 0;
     }
 }

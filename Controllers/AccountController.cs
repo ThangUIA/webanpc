@@ -205,7 +205,8 @@ namespace WebBanPC.Controllers
                 UserId = user.UserId,
                 FullName = user.FullName,
                 Email = user.Email,
-                PhoneNumber = user.PhoneNumber ?? string.Empty
+                PhoneNumber = user.PhoneNumber ?? string.Empty,
+                RewardPoints = user.RewardPoints
             };
 
             return View(vm);

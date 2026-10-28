@@ -79,6 +79,25 @@ namespace WebBanPC.Controllers
                 TempData["ErrorMessage"] = "Không tìm thấy đơn hàng.";
                 return RedirectToAction(nameof(Index));
             }
+            // Khi Admin chuyển đơn sang trạng thái Hoàn thành (ví dụ OrderStatus == 4)
+            if (order.OrderStatus == 4 && !order.IsPointsAwarded && order.UserId.HasValue)
+            {
+                // Kiểm tra đơn hàng có từ 10 triệu trở lên không
+                if (order.TotalAmount >= 10000000)
+                {
+                    var user = await _context.Users.FindAsync(order.UserId.Value);
+                    if (user != null)
+                    {
+                        // Kiểm tra xem đây có phải là đơn hàng hoàn thành đầu tiên của khách không
+                        bool isFirstCompletedOrder = !await _context.Orders
+                            .AnyAsync(o => o.UserId == user.UserId && o.OrderId != order.OrderId && o.OrderStatus == 4);
+
+                        int pointsToAdd = isFirstCompletedOrder ? 5 : 1;
+                        user.RewardPoints += pointsToAdd;
+                        order.IsPointsAwarded = true; // Đánh dấu đã cộng điểm
+                    }
+                }
+            }
 
             order.OrderStatus = newStatus;
             await _context.SaveChangesAsync();

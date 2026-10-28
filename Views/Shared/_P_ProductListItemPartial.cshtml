@@ -10,6 +10,14 @@
                     ?? Model.ProductImages?.FirstOrDefault()?.ImageUrl
                     ?? "img/product-3.png";
 }
+@{
+    // Lấy danh sách review đã kích hoạt
+    var reviews = Model.ProductReviews != null
+        ? ((IEnumerable<WebBanPC.Models.ProductReview>)Model.ProductReviews).Where(r => r.IsActive).ToList()
+        : new List<WebBanPC.Models.ProductReview>();
+
+    double avgRating = reviews.Any() ? reviews.Average(r => r.Rating) : 0;
+}
 
 <!-- THÊM position-relative VÀO THẺ BAO NGOÀI -->
 <div class="products-mini-item border rounded position-relative">
@@ -67,6 +75,34 @@
                         <del class="me-2 fs-6 text-muted">@Model.OldPrice.Value.ToString("N0") đ</del>
                     }
                     <span class="text-primary fw-bold">@Model.Price.ToString("N0") đ</span>
+                </div>
+                <!-- THÊM CỤM SAO ĐỘNG VÀO ĐÂY -->
+                <div class="d-flex text-warning my-1" style="font-size: 0.75rem;">
+                    @if (!reviews.Any())
+                    {
+                        for (int i = 1; i <= 5; i++)
+                        {
+                            <i class="far fa-star text-muted me-1"></i>
+                        }
+                    }
+                    else
+                    {
+                        for (int i = 1; i <= 5; i++)
+                        {
+                            if (avgRating >= i)
+                            {
+                                <i class="fas fa-star text-warning me-1"></i>
+                            }
+                            else if (avgRating >= (i - 0.5))
+                            {
+                                <i class="fas fa-star-half-alt text-warning me-1"></i>
+                            }
+                            else
+                            {
+                                <i class="far fa-star text-muted me-1"></i>
+                            }
+                        }
+                    }
                 </div>
             </div>
         </div>

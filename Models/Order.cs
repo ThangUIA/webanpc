@@ -22,6 +22,7 @@ public partial class Order
     public decimal TotalAmount { get; set; }
 
     public int OrderStatus { get; set; }
+    public bool IsPointsAwarded { get; set; } = false;
 
     public DateTime? OrderDate { get; set; }
 

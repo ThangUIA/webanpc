@@ -18,6 +18,7 @@ namespace WebBanPC.Controllers
             var baseQuery = _context.Products
                 .Include(p => p.ProductImages)
                 .Include(p => p.Category)
+                .Include(p => p.ProductReviews)
                 .AsNoTracking();
             var activeBanners = await _context.Banners
                 .Where(b => b.IsActive)

@@ -1,0 +1,363 @@
+﻿@model IEnumerable<WebBanPC.Models.LuckyWheelPrize>
+@{
+    ViewData["Title"] = "Quản Lý Phần Thưởng Vòng Quay";
+    Layout = "~/Views/Shared/_Layout.cshtml"; // Thay layout tương ứng nếu dùng layout admin khác
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex gap-2">
+        <!-- Nút xem danh sách người trúng giải -->
+        <a asp-action="History" class="btn btn-outline-danger rounded-pill px-3 fw-bold shadow-sm">
+            <i class="fas fa-gift me-1"></i> Xem Người Trúng Quà
+        </a>
+        <button class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#modalCreatePrize">
+            <i class="fas fa-plus me-1"></i> Thêm Phần Thưởng
+        </button>
+    </div>
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-1"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle me-1"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">Thứ tự</th>
+                            <th>Màu hiển thị</th>
+                            <th>Tên phần thưởng</th>
+                            <th>Trọng số trúng (Tỷ lệ)</th>
+                            <th>Trạng thái</th>
+                            <th class="text-end pe-4">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="ps-4 fw-bold">#@item.DisplayOrder</td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <span class="d-inline-block rounded-circle me-2 border" style="width: 24px; height: 24px; background-color: @item.ColorHex;"></span>
+                                            <code>@item.ColorHex</code>
+                                        </div>
+                                    </td>
+                                    <td class="fw-bold">@item.PrizeName</td>
+                                    <td>
+                                        <span class="badge bg-info-subtle text-info border px-2 py-1">
+                                            @item.Probability điểm trọng số
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @if (item.IsActive)
+                                        {
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1 rounded-pill">Đang bật</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary-subtle text-muted border px-3 py-1 rounded-pill">Đã tắt</span>
+                                        }
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        <button class="btn btn-sm btn-outline-warning rounded-circle me-1"
+                                                onclick="openEditModal(@item.PrizeId, '@Html.Raw(item.PrizeName)', '@item.ColorHex', @item.Probability, @item.DisplayOrder, @item.IsActive.ToString().ToLower())"
+                                                title="Chỉnh sửa">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <form asp-action="Delete" asp-route-id="@item.PrizeId" method="post" class="d-inline" onsubmit="return confirm('Bạn có chắc muốn xóa phần thưởng này?');">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle" title="Xóa">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center py-5 text-muted">Chưa có phần thưởng nào được thiết lập.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Thêm Phần Thưởng Động -->
+<div class="modal fade" id="modalCreatePrize" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title fw-bold"><i class="fas fa-plus-circle me-2"></i>Thêm Phần Thưởng</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="Create" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-body p-4">
+
+                    <!-- CHỌN NGUỒN PHẦN THƯỞNG -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Nguồn quà tặng</label>
+                        <select id="selectSourceType" class="form-select bg-light">
+                            <option value="custom">-- Tự nhập quà tùy ý (May mắn lần sau, Hiện vật...) --</option>
+                            <option value="voucher">🎁 Chọn từ Voucher có sẵn</option>
+                            <option value="product">🖥️ Chọn từ Sản Phẩm có sẵn</option>
+                        </select>
+                    </div>
+
+                    <!-- DANH SÁCH VOUCHER (ẨN MẶC ĐỊNH) -->
+                    <div class="mb-3 d-none" id="groupVoucherSelect">
+                        <label class="form-label fw-bold text-success">Chọn Voucher trong hệ thống</label>
+                        <select id="selectVoucherItem" class="form-select">
+                            <option value="">-- Chọn Voucher --</option>
+                            @if (ViewBag.Vouchers != null)
+                            {
+                                foreach (var v in ViewBag.Vouchers)
+                                {
+                                    <option value="@v.Code">@v.DisplayText</option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <!-- DANH SÁCH SẢN PHẨM (ẨN MẶC ĐỊNH) -->
+                    <div class="mb-3 d-none" id="groupProductSelect">
+                        <label class="form-label fw-bold text-primary">Chọn Sản phẩm trong kho</label>
+                        <select id="selectProductItem" class="form-select">
+                            <option value="">-- Chọn Sản phẩm --</option>
+                            @if (ViewBag.Products != null)
+                            {
+                                foreach (var p in ViewBag.Products)
+                                {
+                                    <option value="@p.Name">@p.Name</option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <!-- Ô TÊN PHẦN THƯỞNG HIỂN THỊ TRÊN VÒNG QUAY -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Tên hiển thị trên vòng quay <span class="text-danger">*</span></label>
+                        <input type="text" id="inputPrizeName" name="PrizeName" class="form-control fw-bold text-primary" placeholder="VD: Voucher 50K, Chuột Gaming..." required />
+                        <small class="text-muted">Tên này sẽ được vẽ trực tiếp lên ô nan quạt của vòng quay.</small>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Màu ô hiển thị</label>
+                            <input type="color" name="ColorHex" class="form-control form-control-color w-100" value="#e74c3c" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Thứ tự ô</label>
+                            <input type="number" name="DisplayOrder" class="form-control" value="1" min="1" required />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Trọng số trúng thưởng <span class="text-danger">*</span></label>
+                        <input type="number" name="Probability" class="form-control" value="10" min="1" max="1000" required />
+                        <small class="text-muted">Càng lớn càng dễ quay trúng (Ví dụ: May mắn = 30, Quà to = 1).</small>
+                    </div>
+
+                    <div class="form-check form-switch mt-2">
+                        <input class="form-check-input" type="checkbox" name="IsActive" value="true" checked id="createIsActive">
+                        <label class="form-check-label fw-bold" for="createIsActive">Kích hoạt phần thưởng</label>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary rounded-pill px-3" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-warning rounded-pill px-4 fw-bold text-dark">Thêm Mới</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Sửa Phần Thưởng (Có chọn Voucher & Sản Phẩm) -->
+<div class="modal fade" id="modalEditPrize" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title fw-bold"><i class="fas fa-edit me-2"></i>Chỉnh Sửa Phần Thưởng</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="Edit" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" id="editPrizeId" name="PrizeId" />
+
+                <div class="modal-body p-4">
+                    <!-- 1. CHỌN NGUỒN PHẦN THƯỞNG -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Nguồn quà tặng</label>
+                        <select id="editSourceType" class="form-select bg-light">
+                            <option value="custom">-- Giữ nguyên / Tự nhập chữ tùy ý --</option>
+                            <option value="voucher">🎁 Đổi sang Voucher có sẵn</option>
+                            <option value="product">🖥️ Đổi sang Sản Phẩm trong kho</option>
+                        </select>
+                    </div>
+
+                    <!-- DANH SÁCH VOUCHER (ẨN MẶC ĐỊNH) -->
+                    <div class="mb-3 d-none" id="editGroupVoucher">
+                        <label class="form-label fw-bold text-success">Chọn Voucher trong hệ thống</label>
+                        <select id="editSelectVoucher" class="form-select">
+                            <option value="">-- Chọn Voucher --</option>
+                            @if (ViewBag.Vouchers != null)
+                            {
+                                foreach (var v in ViewBag.Vouchers)
+                                {
+                                    <option value="@v.Code">@v.DisplayText</option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <!-- DANH SÁCH SẢN PHẨM (ẨN MẶC ĐỊNH) -->
+                    <div class="mb-3 d-none" id="editGroupProduct">
+                        <label class="form-label fw-bold text-primary">Chọn Sản phẩm trong kho</label>
+                        <select id="editSelectProduct" class="form-select">
+                            <option value="">-- Chọn Sản phẩm --</option>
+                            @if (ViewBag.Products != null)
+                            {
+                                foreach (var p in ViewBag.Products)
+                                {
+                                    <option value="@p.Name">@p.Name</option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <!-- 2. TÊN HIỂN THỊ TRÊN VÒNG QUAY -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Tên phần thưởng <span class="text-danger">*</span></label>
+                        <input type="text" id="editPrizeName" name="PrizeName" class="form-control fw-bold text-primary" required />
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Màu ô hiển thị</label>
+                            <input type="color" id="editColorHex" name="ColorHex" class="form-control form-control-color w-100" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Thứ tự hiển thị</label>
+                            <input type="number" id="editDisplayOrder" name="DisplayOrder" class="form-control" min="1" required />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Trọng số trúng thưởng <span class="text-danger">*</span></label>
+                        <input type="number" id="editProbability" name="Probability" class="form-control" min="1" max="1000" required />
+                    </div>
+
+                    <!-- CHECKBOX TRẠNG THÁI -->
+                    <div class="form-check form-switch mt-2">
+                        <input class="form-check-input" type="checkbox" name="IsActive" value="true" id="editIsActive">
+                        <input type="hidden" name="IsActive" value="false" />
+                        <label class="form-check-label fw-bold" for="editIsActive">Kích hoạt phần thưởng</label>
+                    </div>
+                </div>
+
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-warning rounded-pill px-4 fw-bold text-dark">Lưu Thay Đổi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Khi thay đổi nguồn quà tặng
+        $('#selectSourceType').on('change', function () {
+            let type = $(this).val();
+
+            if (type === 'voucher') {
+                $('#groupVoucherSelect').removeClass('d-none');
+                $('#groupProductSelect').addClass('d-none');
+            } else if (type === 'product') {
+                $('#groupProductSelect').removeClass('d-none');
+                $('#groupVoucherSelect').addClass('d-none');
+            } else {
+                $('#groupVoucherSelect').addClass('d-none');
+                $('#groupProductSelect').addClass('d-none');
+                $('#inputPrizeName').val('');
+            }
+        });
+
+        // Khi chọn một Voucher cụ thể
+        $('#selectVoucherItem').on('change', function () {
+            let code = $(this).val();
+            let text = $(this).find('option:selected').text();
+            if (code) {
+                // Tự gán tên cho ô vòng quay: "Voucher {Tên}"
+                $('#inputPrizeName').val('Voucher ' + code);
+            }
+        });
+
+        // Khi chọn một Sản phẩm cụ thể
+        $('#selectProductItem').on('change', function () {
+            let prodName = $(this).val();
+            if (prodName) {
+                // Rút gọn tên sản phẩm nếu quá dài để hiển thị vừa nan quạt
+                let shortName = prodName.length > 22 ? prodName.substring(0, 20) + '...' : prodName;
+                $('#inputPrizeName').val(shortName);
+            }
+        });
+        $('#editSourceType').on('change', function () {
+            let type = $(this).val();
+            if (type === 'voucher') {
+                $('#editGroupVoucher').removeClass('d-none');
+                $('#editGroupProduct').addClass('d-none');
+            } else if (type === 'product') {
+                $('#editGroupProduct').removeClass('d-none');
+                $('#editGroupVoucher').addClass('d-none');
+            } else {
+                $('#editGroupVoucher').addClass('d-none');
+                $('#editGroupProduct').addClass('d-none');
+            }
+        });
+
+        $('#editSelectVoucher').on('change', function () {
+            let code = $(this).val();
+            if (code) {
+                $('#editPrizeName').val('Voucher ' + code);
+            }
+        });
+
+        $('#editSelectProduct').on('change', function () {
+            let prodName = $(this).val();
+            if (prodName) {
+                let shortName = prodName.length > 22 ? prodName.substring(0, 20) + '...' : prodName;
+                $('#editPrizeName').val(shortName);
+            }
+        });
+        function openEditModal(id, name, color, prob, order, isActive) {
+            $('#editPrizeId').val(id);
+            $('#editPrizeName').val(name);
+            $('#editColorHex').val(color);
+            $('#editProbability').val(prob);
+            $('#editDisplayOrder').val(order);
+            $('#editIsActive').prop('checked', isActive);
+            $('#modalEditPrize').modal('show');
+        }
+    </script>
+}

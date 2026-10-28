@@ -1,0 +1,339 @@
+﻿@model IEnumerable<WebBanPC.Models.SpinHistory>
+@{
+    ViewData["Title"] = "Vòng Quay May Mắn - TCSHOP";
+}
+
+<style>
+    /* Khung bọc vòng quay giả lập máy chơi game */
+    .wheel-wrapper {
+        position: relative;
+        width: 440px;
+        height: 440px;
+        margin: 0 auto;
+        padding: 15px;
+        background: radial-gradient(circle, #ff8800 0%, #d35400 60%, #7e2b00 100%);
+        border-radius: 50%;
+        box-shadow: 0 15px 35px rgba(211, 84, 0, 0.35), inset 0 0 15px rgba(255, 255, 255, 0.4), inset 0 0 25px rgba(0, 0, 0, 0.6);
+        border: 4px solid #f39c12;
+    }
+
+    /* Đèn LED viền quanh vòng quay */
+    .wheel-led {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        background: #fff;
+        border-radius: 50%;
+        box-shadow: 0 0 8px 2px #fff, 0 0 12px 4px #ffeb3b;
+        transform: translate(-50%, -50%);
+    }
+
+    /* Kim chỉ giải thưởng (Pointer) */
+    .wheel-pointer {
+        position: absolute;
+        top: 2px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 38px;
+        height: 48px;
+        background: linear-gradient(180deg, #e74c3c 0%, #c0392b 100%);
+        clip-path: polygon(50% 100%, 0 0, 100% 0);
+        z-index: 30;
+        filter: drop-shadow(0 4px 6px rgba(0,0,0,0.4));
+    }
+
+    /* Trục quay trung tâm (Center Hub) */
+    .wheel-center-cap {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 68px;
+        height: 68px;
+        background: radial-gradient(circle, #ffffff 10%, #f1c40f 60%, #d35400 100%);
+        border-radius: 50%;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35), inset 0 2px 4px rgba(255, 255, 255, 0.8);
+        border: 3px solid #ffffff;
+        z-index: 20;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 13px;
+        color: #7e2b00;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    /* Hiệu ứng nhấp nháy đèn LED */
+    @@keyframes ledGlow {
+        0%, 100% {
+            opacity: 1;
+            filter: drop-shadow(0 0 6px #fff);
+        }
+
+        50% {
+            opacity: 0.4;
+            filter: none;
+        }
+    }
+
+    .wheel-led:nth-child(even) {
+        animation: ledGlow 1s infinite ease-in-out;
+    }
+
+    .wheel-led:nth-child(odd) {
+        animation: ledGlow 1s infinite ease-in-out 0.5s;
+    }
+</style>
+
+<div class="container py-5">
+    <!-- Tiêu đề & Thông số điểm -->
+    <div class="text-center mb-5">
+        <span class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-bold text-uppercase mb-2 shadow-sm">
+            <i class="fas fa-gift me-1"></i> Mini Game Tích Điểm
+        </span>
+        <h1 class="fw-extrabold text-dark display-5 mb-2">
+            <i class="fas fa-dharmachakra text-warning me-2"></i>VÒNG QUAY MAY MẮN
+        </h1>
+        <p class="text-muted fs-6 mx-auto" style="max-width: 600px;">
+            Đơn hàng từ <strong>10.000.000 đ</strong> tích lũy điểm thưởng đổi lượt quay. Cơ hội nhận ngay linh kiện PC và Voucher giảm giá cực khủng!
+        </p>
+
+        <!-- Thẻ điểm phong cách hiện đại -->
+        <div class="d-inline-flex flex-wrap align-items-center justify-content-center gap-4 bg-white px-4 py-3 rounded-4 shadow-sm border mt-2">
+            <div class="d-flex align-items-center text-start">
+                <div class="bg-primary bg-opacity-10 text-primary rounded-circle p-3 me-3">
+                    <i class="fas fa-coins fa-2x"></i>
+                </div>
+                <div>
+                    <span class="text-muted small d-block">Điểm hiện có</span>
+                    <strong class="text-primary fs-3" id="userPoints">@ViewBag.Points</strong> <small class="text-muted fw-bold">điểm</small>
+                </div>
+            </div>
+
+            <div class="border-end d-none d-sm-block" style="height: 45px;"></div>
+
+            <div class="d-flex align-items-center text-start">
+                <div class="bg-success bg-opacity-10 text-success rounded-circle p-3 me-3">
+                    <i class="fas fa-play-circle fa-2x"></i>
+                </div>
+                <div>
+                    <span class="text-muted small d-block">Lượt quay khả dụng</span>
+                    <strong class="text-success fs-3" id="userSpins">@ViewBag.SpinsAvailable</strong> <small class="text-muted fw-bold">lượt</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row align-items-center justify-content-center g-5">
+        <!-- Vòng quay bên trái -->
+        <div class="col-lg-6 text-center">
+            <div class="wheel-wrapper">
+                <!-- Kim chỉ -->
+                <div class="wheel-pointer"></div>
+
+                <!-- Đèn LED trang trí quanh viền -->
+                @for (int i = 0; i < 16; i++)
+                {
+                    double deg = (360.0 / 16) * i;
+                    double rad = deg * Math.PI / 180;
+                    double top = 50 + 47 * Math.Sin(rad);
+                    double left = 50 + 47 * Math.Cos(rad);
+                    <div class="wheel-led" style="top: @top%; left: @left%;"></div>
+                }
+
+                <!-- Trục tròn trung tâm -->
+                <div class="wheel-center-cap">TCSHOP</div>
+
+                <!-- Canvas Vòng quay -->
+                <canvas id="wheelCanvas" width="400" height="400" style="border-radius: 50%; display: block;"></canvas>
+            </div>
+
+            <div class="mt-4 pt-2">
+                <button id="btnSpin" class="btn btn-warning btn-lg rounded-pill px-5 py-3 fw-bold text-dark shadow-lg border-0 fs-5 transition-transform">
+                    <i class="fas fa-play me-2"></i>QUAY NGAY (10 ĐIỂM)
+                </button>
+                <div class="small text-muted mt-2">Mỗi lượt quay sẽ trừ <strong>10 điểm</strong> từ tài khoản của bạn</div>
+            </div>
+        </div>
+
+        <!-- Bảng lịch sử bên phải -->
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-header bg-dark text-white p-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold"><i class="fas fa-history text-warning me-2"></i>Lịch Sử Trúng Thưởng</h5>
+                    <span class="badge bg-secondary rounded-pill">10 lượt gần nhất</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive" style="max-height: 380px; overflow-y: auto;">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light small text-uppercase text-muted">
+                                <tr>
+                                    <th class="ps-3 py-3">Thời gian</th>
+                                    <th class="pe-3 py-3 text-end">Phần thưởng</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyBody">
+                                @if (Model != null && Model.Any())
+                                {
+                                    foreach (var h in Model)
+                                    {
+                                        <tr>
+                                            <td class="ps-3 py-3">
+                                                <small class="text-muted"><i class="far fa-clock me-1"></i>@h.CreatedAt?.ToString("dd/MM/yyyy HH:mm")</small>
+                                            </td>
+                                            <td class="pe-3 py-3 text-end">
+                                                <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill fw-bold">
+                                                    @h.PrizeName
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr id="emptyRow">
+                                        <td colspan="2" class="text-center py-5 text-muted">
+                                            <i class="fas fa-ticket-alt fa-3x text-secondary mb-3 d-block opacity-50"></i>
+                                            Bạn chưa thực hiện lượt quay nào.
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Html.AntiForgeryToken()
+    <script>
+        const canvas = document.getElementById('wheelCanvas');
+        const ctx = canvas.getContext('2d');
+        const prizes = @Html.Raw(ViewBag.PrizesJson ?? "[]");
+        const colors = @Html.Raw(ViewBag.ColorsJson ?? "[]");
+
+        const numSegments = prizes.length;
+        const arc = (2 * Math.PI) / numSegments;
+        let currentAngle = 0;
+        let isSpinning = false;
+
+        function drawWheel() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const cx = 200;
+            const cy = 200;
+            const r = 196;
+
+            for (let i = 0; i < numSegments; i++) {
+                const angle = currentAngle + i * arc;
+
+                // Vẽ nan quạt
+                ctx.beginPath();
+                ctx.fillStyle = colors[i];
+                ctx.moveTo(cx, cy);
+                ctx.arc(cx, cy, r, angle, angle + arc);
+                ctx.lineTo(cx, cy);
+                ctx.fill();
+
+                // Viền ngăn cách giữa các nan
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2.5;
+                ctx.stroke();
+
+                // Vẽ text
+                ctx.save();
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 13px Roboto, Segoe UI, sans-serif';
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
+                ctx.shadowBlur = 4;
+                ctx.translate(cx + Math.cos(angle + arc / 2) * (r * 0.65), cy + Math.sin(angle + arc / 2) * (r * 0.65));
+                ctx.rotate(angle + arc / 2 + Math.PI / 2);
+
+                const text = prizes[i];
+                ctx.fillText(text, -ctx.measureText(text).width / 2, 0);
+                ctx.restore();
+            }
+        }
+        drawWheel();
+
+        $('#btnSpin').on('click', function () {
+            if (isSpinning) return;
+
+            let token = $('input[name="__RequestVerificationToken"]').val();
+
+            $.ajax({
+                url: '/LuckyWheel/Spin',
+                type: 'POST',
+                data: { __RequestVerificationToken: token },
+                success: function (res) {
+                    if (!res.success) {
+                        alert(res.message);
+                        return;
+                    }
+
+                    isSpinning = true;
+                    $('#btnSpin').prop('disabled', true).addClass('opacity-75');
+
+                    // Kim chỉ nằm ở đỉnh trên cùng (góc 270 độ / -90 độ)
+                    const segmentDeg = 360 / numSegments;
+                    const stopAngle = 360 - (res.prizeIndex * segmentDeg) - (segmentDeg / 2) - 90;
+                    const totalRotation = (360 * 6) + stopAngle; // Quay nhanh 6 vòng rồi dừng nhẹ
+
+                    let start = null;
+                    const duration = 5000; // 5 giây mượt mà
+
+                    function animate(time) {
+                        if (!start) start = time;
+                        let elapsed = time - start;
+                        let progress = Math.min(elapsed / duration, 1);
+
+                        // Hàm Ease-Out Quintic tạo quán tính thật
+                        let easeOut = 1 - Math.pow(1 - progress, 4);
+                        currentAngle = (totalRotation * easeOut) * Math.PI / 180;
+                        drawWheel();
+
+                        if (progress < 1) {
+                            requestAnimationFrame(animate);
+                        } else {
+                            isSpinning = false;
+                            $('#btnSpin').prop('disabled', false).removeClass('opacity-75');
+                            $('#userPoints').text(res.remainingPoints);
+                            $('#userSpins').text(res.spinsAvailable);
+
+                            // Thông báo kết quả
+                            if (res.giftCode) {
+                            alert(`🎉 CHÚC MỪNG BẠN!\nPhần thưởng: ${res.prizeName}\n${res.detailMessage}\n\nHãy lưu lại mã để sử dụng khi thanh toán.`);
+                             } else {
+                             alert(`🎉 KẾT QUẢ: ${res.prizeName}\n${res.detailMessage}`);
+                              }
+
+                            // Cập nhật bảng lịch sử
+                                   $('#emptyRow').remove();
+        let codeBadge = res.giftCode ? `<br><small class="text-danger fw-bold">Mã: ${res.giftCode}</small>` : '';
+        let newRow = `
+            <tr>
+                <td class="ps-3 py-3"><small class="text-muted"><i class="far fa-clock me-1"></i>Vừa xong</small></td>
+                <td class="pe-3 py-3 text-end">
+                    <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill fw-bold">
+                        ${res.prizeName}
+                    </span>
+                    ${codeBadge}
+                </td>
+            </tr>
+        `;
+        $('#historyBody').prepend(newRow);
+                        }
+                    }
+                    requestAnimationFrame(animate);
+                },
+                error: function () {
+                    alert('Đã xảy ra lỗi khi kết nối máy chủ!');
+                }
+            });
+        });
+    </script>
+}

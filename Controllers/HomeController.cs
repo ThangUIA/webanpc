@@ -19,7 +19,7 @@ namespace WebBanPC.Controllers
 
         public async Task<IActionResult> Index(string? search,int? categoryId,int? brandId,decimal? maxPrice,string? sortOrder,int? page)
         {
-            int pageSize = 6;
+            int pageSize = 9;
             int pageNumber = page ?? 1;
 
             ViewBag.CurrentSearch = search;
@@ -32,6 +32,7 @@ namespace WebBanPC.Controllers
                 .Include(p => p.Category)
                 .Include(p => p.Brand)
                 .Include(p => p.ProductImages)
+                .Include(p => p.ProductReviews)
                 .AsQueryable();
 
             // 1. Lọc theo từ khóa tìm kiếm (Tên hoặc Mô tả)

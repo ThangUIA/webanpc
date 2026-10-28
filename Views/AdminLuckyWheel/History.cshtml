@@ -1,0 +1,162 @@
+﻿@model IEnumerable<WebBanPC.Models.SpinHistory>
+@{
+    ViewData["Title"] = "Lịch Sử Trúng Thưởng - Admin";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid py-4">
+    <!-- Tiêu đề & Nút chuyển tab -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+        <div>
+            <h3 class="fw-bold text-dark mb-1">
+                <i class="fas fa-gift text-danger me-2"></i>Danh Sách Khách Hàng Trúng Thưởng
+            </h3>
+            <p class="text-muted small mb-0">Theo dõi thông tin khách trúng Voucher và linh kiện/hiện vật cần gửi tặng</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="Index" class="btn btn-outline-warning rounded-pill px-3 fw-bold">
+                <i class="fas fa-cog me-1"></i> Cấu Hình Vòng Quay
+            </a>
+            <a asp-controller="LuckyWheel" asp-action="Index" target="_blank" class="btn btn-primary rounded-pill px-3 fw-bold">
+                <i class="fas fa-external-link-alt me-1"></i> Xem Vòng Quay
+            </a>
+        </div>
+    </div>
+
+    <!-- Khối Bảng Thống Kê & Lịch Sử -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-header bg-dark text-white p-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold"><i class="fas fa-list me-2"></i>Lượt Quay Của Khách Hàng</h5>
+            <span class="badge bg-primary rounded-pill px-3 py-2">Tổng cộng: @Model.Count() lượt quay</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">Mã #</th>
+                            <th>Khách hàng</th>
+                            <th>Số điện thoại</th>
+                            <th>Phần thưởng</th>
+                            <th>Mã Voucher / Quà</th>
+                            <th>Thời gian quay</th>
+                            <th>Trạng thái trao quà</th>
+                            <th class="text-end pe-4">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var item in Model)
+                            {
+                                bool isVoucher = !string.IsNullOrEmpty(item.GiftCode);
+                                bool isMiss = item.PrizeName.Contains("May Mắn", StringComparison.OrdinalIgnoreCase);
+
+                                <tr>
+                                    <td class="ps-4 fw-bold">#@item.Id</td>
+                                    <td>
+                                        <div class="fw-bold text-dark">@(item.User?.FullName ?? "Khách vãng lai")</div>
+                                        <small class="text-muted">@(item.User?.Email ?? "N/A")</small>
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(item.User?.PhoneNumber))
+                                        {
+                                            <a href="tel:@item.User.PhoneNumber" class="text-decoration-none fw-bold text-primary">
+                                                <i class="fas fa-phone-alt me-1"></i>@item.User.PhoneNumber
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Chưa cập nhật SĐT</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (isMiss)
+                                        {
+                                            <span class="badge bg-secondary-subtle text-muted border px-3 py-2 rounded-pill">
+                                                @item.PrizeName
+                                            </span>
+                                        }
+                                        else if (isVoucher)
+                                        {
+                                            <span class="badge bg-info-subtle text-info border border-info px-3 py-2 rounded-pill fw-bold">
+                                                <i class="fas fa-ticket-alt me-1"></i>@item.PrizeName
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning-subtle text-dark border border-warning px-3 py-2 rounded-pill fw-bold">
+                                                <i class="fas fa-box-open me-1 text-danger"></i>@item.PrizeName
+                                            </span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(item.GiftCode))
+                                        {
+                                            <code class="fw-bold fs-6 text-danger bg-light px-2 py-1 rounded border border-danger-subtle">
+                                                @item.GiftCode
+                                            </code>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted small">Quà hiện vật</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">
+                                            <i class="far fa-clock me-1"></i>@item.CreatedAt?.ToString("dd/MM/yyyy HH:mm")
+                                        </small>
+                                    </td>
+                                    <td>
+                                        @if (isMiss)
+                                        {
+                                            <span class="text-muted small">Không áp dụng</span>
+                                        }
+                                        else if (item.IsClaimed)
+                                        {
+                                            <span class="badge bg-success text-white px-3 py-2 rounded-pill">
+                                                <i class="fas fa-check-circle me-1"></i>Đã trao quà
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-2 rounded-pill">
+                                                <i class="fas fa-clock me-1"></i>Chưa gửi quà
+                                            </span>
+                                        }
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        @if (!isMiss && !item.IsClaimed)
+                                        {
+                                            <form asp-action="MarkClaimed" asp-route-id="@item.Id" method="post" class="d-inline" onsubmit="return confirm('Xác nhận đã gửi/trao quà cho khách này?');">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-sm btn-success rounded-pill px-3 fw-bold" title="Xác nhận đã trao quà">
+                                                    <i class="fas fa-check me-1"></i> Đã Trao
+                                                </button>
+                                            </form>
+                                        }
+                                        else if (item.IsClaimed)
+                                        {
+                                            <button class="btn btn-sm btn-outline-secondary rounded-pill px-3" disabled>
+                                                <i class="fas fa-check-double me-1"></i> Hoàn tất
+                                            </button>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="8" class="text-center py-5 text-muted">
+                                    <i class="fas fa-inbox fa-3x mb-3 text-secondary d-block opacity-50"></i>
+                                    Chưa có ai tham gia quay thưởng.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

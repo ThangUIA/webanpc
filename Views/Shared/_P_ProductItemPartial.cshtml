@@ -11,6 +11,14 @@
                     ?? Model.ProductImages.FirstOrDefault()?.ImageUrl
                     ?? "img/product-3.png";
 }
+@{
+    // Lấy danh sách review đã kích hoạt
+    var reviews = Model.ProductReviews != null
+        ? ((IEnumerable<WebBanPC.Models.ProductReview>)Model.ProductReviews).Where(r => r.IsActive).ToList()
+        : new List<WebBanPC.Models.ProductReview>();
+
+    double avgRating = reviews.Any() ? reviews.Average(r => r.Rating) : 0;
+}
 
 <!-- 1. THÊM position-relative VÀO ĐÂY ĐỂ CÁC NÚT CÔNG CỤ ĐỊNH VỊ CHUẨN XÁC -->
 <div class="col-lg-4 position-relative">
@@ -74,12 +82,34 @@
                 <i class="fas fa-shopping-cart me-2"></i>Thêm vào giỏ
             </button>
             <div class="d-flex justify-content-between align-items-center">
-                <div class="d-flex">
-                    <i class="fas fa-star text-primary"></i>
-                    <i class="fas fa-star text-primary"></i>
-                    <i class="fas fa-star text-primary"></i>
-                    <i class="fas fa-star text-primary"></i>
-                    <i class="fas fa-star text-secondary"></i>
+                <div class="d-flex text-warning my-2" style="font-size: 0.85rem;">
+                    @if (!reviews.Any())
+                    {
+                        @* Nếu chưa có ai đánh giá thì hiện 5 sao xám mờ *@
+                        for (int i = 1; i <= 5; i++)
+                        {
+                            <i class="far fa-star text-muted me-1"></i>
+                        }
+                    }
+                    else
+                    {
+                        @* Đã có đánh giá: tô vàng theo điểm trung bình *@
+                        for (int i = 1; i <= 5; i++)
+                        {
+                            if (avgRating >= i)
+                            {
+                                <i class="fas fa-star text-warning me-1"></i>
+                            }
+                            else if (avgRating >= (i - 0.5))
+                            {
+                                <i class="fas fa-star-half-alt text-warning me-1"></i>
+                            }
+                            else
+                            {
+                                <i class="far fa-star text-muted me-1"></i>
+                            }
+                        }
+                    }
                 </div>
                 <div class="d-flex">
                     <button type="button"

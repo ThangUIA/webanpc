@@ -23,6 +23,8 @@ public partial class User
 
     public bool? IsActive { get; set; }
 
+    public int RewardPoints { get; set; } = 0;
+
     public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
 
     public virtual Role Role { get; set; } = null!;

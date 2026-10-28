@@ -22,6 +22,7 @@ namespace WebBanPC.Controllers
                 .AsNoTracking()
                 .Include(p => p.Category)
                 .Include(p => p.ProductImages)
+                .Include (p => p.ProductReviews)
                 .AsQueryable();
 
             if (categoryId.HasValue && categoryId.Value > 0)
@@ -66,7 +67,8 @@ namespace WebBanPC.Controllers
             IQueryable<Product> query = _context.Products
                 .AsNoTracking()
                 .Include(p => p.Category)
-                .Include(p => p.ProductImages);
+                .Include(p => p.ProductImages)
+                .Include(p => p.ProductReviews);
 
             List<Product> allProducts;
 
